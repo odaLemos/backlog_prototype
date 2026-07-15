@@ -284,7 +284,7 @@
             margin-bottom: 20px;
         }
 
-        .view-header h2 {
+        .view-header h2:not(.carousel-section-title) {
             font-size: 1.4rem;
             color: var(--text-light);
             font-weight: 700;
@@ -738,11 +738,11 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--status-playing);
+            color: var(--text-light);
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .carousel-section-title::before {
@@ -750,15 +750,53 @@
             display: inline-block;
             width: 8px;
             height: 8px;
-            background-color: var(--status-playing);
+            background-color: var(--primary);
             border-radius: 50%;
-            box-shadow: 0 0 8px var(--status-playing);
+            box-shadow: 0 0 8px var(--primary);
             animation: pulse-glow 1.5s infinite alternate;
+        }
+
+        /* Modifiers */
+        .title-playing {
+            color: var(--status-playing);
+        }
+        .title-playing::before {
+            background-color: var(--status-playing);
+            box-shadow: 0 0 8px var(--status-playing);
+        }
+
+        .title-backlog {
+            color: #38bdf8;
+        }
+        .title-backlog::before {
+            background-color: #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+        }
+
+        .title-finished {
+            color: var(--status-finished);
+        }
+        .title-finished::before {
+            background-color: var(--status-finished);
+            box-shadow: 0 0 8px var(--status-finished);
+        }
+
+        .title-dropped {
+            color: var(--status-dropped);
+        }
+        .title-dropped::before {
+            background-color: var(--status-dropped);
+            box-shadow: 0 0 8px var(--status-dropped);
         }
 
         @keyframes pulse-glow {
             0% { transform: scale(0.8); opacity: 0.5; }
             100% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes float-icon {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
         }
 
         .carousel-container {
@@ -910,41 +948,53 @@
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
         }
 
-        /* Estilo do botão de preview de informações ao lado do input */
-        .info-preview-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(139, 92, 246, 0.2);
-            color: #d8b4fe;
-            border: 1px solid rgba(139, 92, 246, 0.4);
+        /* Botão circular "+" para adicionar jogo */
+        .add-game-circle-btn {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            width: 26px;
-            height: 26px;
+            background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+            color: white;
+            font-size: 2rem;
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+            transition: all 0.2s ease, transform 0.2s;
+            margin: 16px auto;
+            line-height: 1;
             padding: 0;
             z-index: 5;
-            animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .info-preview-btn:hover {
-            background: var(--primary);
-            color: white;
+        .add-game-circle-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+            background: linear-gradient(135deg, #9061f9 0%, #6d28d9 100%);
+        }
+
+        .add-game-circle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Cards de sugestão do IGDB em grade (2 por linha) */
+        .suggestion-grid-card {
+            position: relative;
+            aspect-ratio: 3 / 4;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #1e293b;
+        }
+
+        .suggestion-grid-card:hover {
+            transform: translateY(-4px);
             border-color: var(--primary);
-            box-shadow: 0 0 8px var(--primary);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        @keyframes pop-in {
-            0% { transform: translateY(-50%) scale(0); opacity: 0; }
-            100% { transform: translateY(-50%) scale(1); opacity: 1; }
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
         }
 
         /* Estilo do botão de ação de status nos cards */
@@ -1071,6 +1121,7 @@
                     <a href="#" onclick="triggerImport(event)">⬆ Importar Backup</a>
                     <a href="#" onclick="exportData(); toggleMenu(event);">⬇ Exportar Backup</a>
                     <a href="#" onclick="openPreferencesModal(event)">⚙️ Preferências</a>
+                    <a href="#" onclick="clearAllData(event)" style="color: #f87171; border-top: 1px solid rgba(248, 113, 113, 0.25);">🗑️ Limpar Dados</a>
                 </div>
             </div>
         </header>
@@ -1086,7 +1137,7 @@
         <div id="homeView" class="view-section">
             <!-- Destaque: Jogando Atualmente -->
             <div id="playingCarouselSection" class="carousel-section" style="display: none;">
-                <h2 class="carousel-section-title">Jogando Atualmente</h2>
+                <h2 class="carousel-section-title title-playing">Jogando Atualmente</h2>
                 <div class="carousel-container">
                     <div id="playingCarousel" class="carousel-track">
                         <!-- Preenchido via JavaScript -->
@@ -1095,6 +1146,7 @@
                 </div>
             </div>
 
+            <h2 class="carousel-section-title title-backlog" id="nextToPlayTitle" style="margin-top: 20px; display: none;"> Próximos a serem jogados</h2>
             <div id="gameListHome" class="list-container"></div>
 
             <div id="seeMoreContainer" style="margin-top: 10px; text-align: center; display: none;">
@@ -1104,54 +1156,60 @@
             </div>
 
             <div id="backlogInputAnchor">
-                <!-- Bloco de Adicionar Jogo -->
-                <div class="input-area" style="margin-top: 16px;">
-                    <div style="position: relative; width: 100%;">
-                        <input type="text" id="gameInput" placeholder="Adicionar jogo ao backlog..." autocomplete="off" style="padding-right: 44px;">
-                        <button id="infoPreviewBtn" class="info-preview-btn" style="display: none;" title="Visualizar detalhes do jogo" onclick="previewSelectedGame(event)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        </button>
-                        <div id="suggestionsDropdown" class="suggestions-dropdown" style="display: none;"></div>
-                    </div>
-                    <div class="input-row">
-                        <input type="text" id="platformInput" placeholder="Plataforma (ex: PC, PS5, Switch)" list="platformList" autocomplete="off">
-                        <datalist id="platformList">
-                            <!-- Será atualizado dinamicamente pelo JS -->
-                        </datalist>
-                        <button class="add-btn" onclick="addGame()">Adicionar</button>
-                    </div>
-                </div>
+                <button class="add-game-circle-btn" onclick="openAddGameScreen()">+</button>
             </div>
         </div>
 
         <!-- Others View -->
         <div id="othersView" class="view-section" style="display: none; opacity: 0; transform: translateY(10px);">
-            <div class="view-header">
-                <button class="back-btn" onclick="switchView('home')">← Voltar</button>
-                <h2>Outros Jogos</h2>
+            <div class="view-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <button class="back-btn" onclick="switchView('home')" style="margin-bottom: 0;">← Voltar</button>
+                <h2 class="carousel-section-title title-backlog" style="margin-bottom: 0;">Backlog</h2>
             </div>
             
             <div id="gameListOthers" class="list-container"></div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="back-btn" onclick="switchView('home')">← Voltar</button>
+            </div>
         </div>
 
         <!-- Finalizados View -->
         <div id="finalizadosView" class="view-section" style="display: none; opacity: 0; transform: translateY(10px);">
-            <div class="view-header">
-                <h2>Jogos Finalizados</h2>
+            <div class="view-header" style="margin-bottom: 16px;">
+                <h2 class="carousel-section-title title-finished" style="margin-bottom: 0;">Jogos Finalizados</h2>
             </div>
             
-            <div id="finalizadosInputAnchor"></div>
             <div id="gameListFinalizados" class="list-container"></div>
+            <div id="finalizadosInputAnchor"></div>
         </div>
 
         <!-- Dropados View -->
         <div id="dropadosView" class="view-section" style="display: none; opacity: 0; transform: translateY(10px);">
-            <div class="view-header">
-                <h2>Jogos Dropados</h2>
+            <div class="view-header" style="margin-bottom: 16px;">
+                <h2 class="carousel-section-title title-dropped" style="margin-bottom: 0;">Jogos Dropados</h2>
             </div>
             
-            <div id="dropadosInputAnchor"></div>
             <div id="gameListDropados" class="list-container"></div>
+            <div id="dropadosInputAnchor"></div>
+        </div>
+
+        <!-- Add Game View -->
+        <div id="addGameView" class="view-section" style="display: none; opacity: 0; transform: translateY(10px);">
+            <div class="view-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <button class="back-btn" onclick="closeAddGameScreen()" style="margin-bottom: 0;">← Voltar</button>
+                <h2 class="carousel-section-title title-playing" id="addGameViewTitle" style="margin-bottom: 0;">Adicionar Jogo</h2>
+            </div>
+            
+            <div class="input-area" style="margin-top: 0;">
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="gameInput" placeholder="Digite o nome do jogo..." autocomplete="off">
+                </div>
+            </div>
+            
+            <div id="suggestionsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px;">
+                <!-- Preenchido via JavaScript -->
+            </div>
         </div>
 
         <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
@@ -1191,6 +1249,18 @@
         </div>
     </div>
 
+    <!-- Modal de Diálogo Customizado (Alert / Confirm) -->
+    <div id="customDialogModal" class="modal-overlay" style="z-index: 1200;">
+        <div class="modal-container" style="max-width: 400px; text-align: center; padding: 24px;" onclick="event.stopPropagation()">
+            <div id="customDialogIcon" style="font-size: 2.5rem; margin-bottom: 12px;">⚠️</div>
+            <h3 id="customDialogTitle" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: white;">Aviso</h3>
+            <p id="customDialogMessage" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px;">Mensagem...</p>
+            <div id="customDialogButtons" style="display: flex; gap: 12px; justify-content: center;">
+                <!-- Botões inseridos dinamicamente -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- CONFIGURAÇÃO DA API IGDB ---
         // Preencha com as suas credenciais da Twitch Developer para habilitar a busca automatizada.
@@ -1214,34 +1284,111 @@
             localStorage.setItem('backlog_oda_mobile', JSON.stringify(games));
         }
 
+        function customAlert(message, title = "Aviso", icon = "⚠️") {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customDialogModal');
+                const titleEl = document.getElementById('customDialogTitle');
+                const msgEl = document.getElementById('customDialogMessage');
+                const iconEl = document.getElementById('customDialogIcon');
+                const buttonsEl = document.getElementById('customDialogButtons');
+
+                titleEl.textContent = title;
+                msgEl.textContent = message;
+                iconEl.textContent = icon;
+                buttonsEl.innerHTML = `
+                    <button class="add-btn" style="flex: 1; padding: 10px 20px;" id="customDialogOkBtn">OK</button>
+                `;
+
+                modal.classList.add('active');
+
+                const handleOk = () => {
+                    modal.classList.remove('active');
+                    resolve();
+                };
+
+                const btn = document.getElementById('customDialogOkBtn');
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                newBtn.addEventListener('click', handleOk);
+            });
+        }
+
+        function customConfirm(message, title = "Confirmar", icon = "❓", confirmText = "Confirmar", cancelText = "Cancelar") {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customDialogModal');
+                const titleEl = document.getElementById('customDialogTitle');
+                const msgEl = document.getElementById('customDialogMessage');
+                const iconEl = document.getElementById('customDialogIcon');
+                const buttonsEl = document.getElementById('customDialogButtons');
+
+                titleEl.textContent = title;
+                msgEl.textContent = message;
+                iconEl.textContent = icon;
+                buttonsEl.innerHTML = `
+                    <button class="backup-btn" style="flex: 1; padding: 10px 20px; border-color: rgba(255,255,255,0.15);" id="customDialogCancelBtn">${cancelText}</button>
+                    <button class="add-btn" style="flex: 1; padding: 10px 20px; background: var(--status-dropped); border-color: rgba(239, 68, 68, 0.4);" id="customDialogConfirmBtn">${confirmText}</button>
+                `;
+
+                modal.classList.add('active');
+
+                const close = (result) => {
+                    modal.classList.remove('active');
+                    resolve(result);
+                };
+
+                const confirmBtn = document.getElementById('customDialogConfirmBtn');
+                const newConfirmBtn = confirmBtn.cloneNode(true);
+                confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+                const cancelBtn = document.getElementById('customDialogCancelBtn');
+                const newCancelBtn = cancelBtn.cloneNode(true);
+                cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+                newConfirmBtn.addEventListener('click', () => close(true));
+                newCancelBtn.addEventListener('click', () => close(false));
+            });
+        }
+
         function switchView(view) {
             currentScreen = view;
             const homeView = document.getElementById('homeView');
             const othersView = document.getElementById('othersView');
-            
+            const finalizadosView = document.getElementById('finalizadosView');
+            const dropadosView = document.getElementById('dropadosView');
+            const addGameView = document.getElementById('addGameView');
+
+            const allViews = [homeView, othersView, finalizadosView, dropadosView, addGameView];
+
+            allViews.forEach(v => {
+                if (v && v.style.display !== 'none') {
+                    v.style.opacity = '0';
+                    v.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        v.style.display = 'none';
+                    }, 200);
+                }
+            });
+
+            let targetView = homeView;
             if (view === 'home') {
-                othersView.style.opacity = '0';
-                othersView.style.transform = 'translateY(10px)';
-                setTimeout(() => {
-                    othersView.style.display = 'none';
-                    homeView.style.display = 'flex';
-                    setTimeout(() => {
-                        homeView.style.opacity = '1';
-                        homeView.style.transform = 'translateY(0)';
-                    }, 20);
-                }, 200);
-            } else {
-                homeView.style.opacity = '0';
-                homeView.style.transform = 'translateY(10px)';
-                setTimeout(() => {
-                    homeView.style.display = 'none';
-                    othersView.style.display = 'flex';
-                    setTimeout(() => {
-                        othersView.style.opacity = '1';
-                        othersView.style.transform = 'translateY(0)';
-                    }, 20);
-                }, 200);
+                if (activeMainTab === 'backlog') targetView = homeView;
+                else if (activeMainTab === 'finalizados') targetView = finalizadosView;
+                else if (activeMainTab === 'dropados') targetView = dropadosView;
+            } else if (view === 'others') {
+                targetView = othersView;
+            } else if (view === 'addGame') {
+                targetView = addGameView;
             }
+
+            setTimeout(() => {
+                if (targetView) {
+                    targetView.style.display = 'flex';
+                    setTimeout(() => {
+                        targetView.style.opacity = '1';
+                        targetView.style.transform = 'translateY(0)';
+                    }, 20);
+                }
+            }, 200);
         }
 
         let activeMainTab = 'backlog';
@@ -1249,7 +1396,6 @@
         function switchMainTab(tabName) {
             activeMainTab = tabName;
             
-            // Atualiza botões ativos das abas
             document.getElementById('tabBacklog').classList.remove('active');
             document.getElementById('tabFinalizados').classList.remove('active');
             document.getElementById('tabDropados').classList.remove('active');
@@ -1262,18 +1408,18 @@
                 document.getElementById('tabDropados').classList.add('active');
             }
 
-            // Move o bloco de adição para o âncora da aba ativa
-            const inputArea = document.querySelector('.input-area');
-            if (inputArea) {
+            // Move o botão circular "+" para o âncora da aba ativa
+            const plusBtn = document.querySelector('.add-game-circle-btn');
+            if (plusBtn) {
                 if (tabName === 'backlog') {
                     const anchor = document.getElementById('backlogInputAnchor');
-                    if (anchor) anchor.appendChild(inputArea);
+                    if (anchor) anchor.appendChild(plusBtn);
                 } else if (tabName === 'finalizados') {
                     const anchor = document.getElementById('finalizadosInputAnchor');
-                    if (anchor) anchor.appendChild(inputArea);
+                    if (anchor) anchor.appendChild(plusBtn);
                 } else if (tabName === 'dropados') {
                     const anchor = document.getElementById('dropadosInputAnchor');
-                    if (anchor) anchor.appendChild(inputArea);
+                    if (anchor) anchor.appendChild(plusBtn);
                 }
             }
 
@@ -1293,23 +1439,16 @@
             const othersView = document.getElementById('othersView');
             const finalizadosView = document.getElementById('finalizadosView');
             const dropadosView = document.getElementById('dropadosView');
+            const addGameView = document.getElementById('addGameView');
 
             // Oculta todas as visualizações com efeito suave de opacidade
-            homeView.style.display = 'none';
-            homeView.style.opacity = '0';
-            homeView.style.transform = 'translateY(10px)';
-            
-            othersView.style.display = 'none';
-            othersView.style.opacity = '0';
-            othersView.style.transform = 'translateY(10px)';
-
-            finalizadosView.style.display = 'none';
-            finalizadosView.style.opacity = '0';
-            finalizadosView.style.transform = 'translateY(10px)';
-
-            dropadosView.style.display = 'none';
-            dropadosView.style.opacity = '0';
-            dropadosView.style.transform = 'translateY(10px)';
+            [homeView, othersView, finalizadosView, dropadosView, addGameView].forEach(v => {
+                if (v) {
+                    v.style.display = 'none';
+                    v.style.opacity = '0';
+                    v.style.transform = 'translateY(10px)';
+                }
+            });
 
             // Mostra a aba ativa
             if (tabName === 'backlog') {
@@ -1325,13 +1464,43 @@
                     finalizadosView.style.opacity = '1';
                     finalizadosView.style.transform = 'translateY(0)';
                 }, 20);
+                currentScreen = 'home';
             } else if (tabName === 'dropados') {
                 dropadosView.style.display = 'flex';
                 setTimeout(() => {
                     dropadosView.style.opacity = '1';
                     dropadosView.style.transform = 'translateY(0)';
                 }, 20);
+                currentScreen = 'home';
             }
+        }
+
+        let previousScreen = 'home';
+        function openAddGameScreen() {
+            previousScreen = currentScreen;
+            
+            const addTitle = document.getElementById('addGameViewTitle');
+            if (activeMainTab === 'backlog') {
+                addTitle.textContent = 'Adicionar ao Backlog';
+            } else if (activeMainTab === 'finalizados') {
+                addTitle.textContent = 'Adicionar aos Finalizados';
+            } else if (activeMainTab === 'dropados') {
+                addTitle.textContent = 'Adicionar aos Dropados';
+            }
+
+            switchView('addGame');
+            setTimeout(() => {
+                document.getElementById('gameInput').focus();
+            }, 300);
+        }
+
+        function closeAddGameScreen() {
+            document.getElementById('gameInput').value = '';
+            document.getElementById('suggestionsGrid').innerHTML = '';
+            selectedGameData = null;
+            resetPlatformDatalist();
+
+            switchView(previousScreen);
         }
 
         // --- LÓGICA DA API IGDB ---
@@ -1379,8 +1548,6 @@
         }
 
         async function fetchSuggestions(query) {
-            const dropdown = document.getElementById('suggestionsDropdown');
-            
             if (!IGDB_CONFIG.CLIENT_ID || !IGDB_CONFIG.CLIENT_SECRET) {
                 console.warn('IGDB API: Client ID ou Client Secret não configurados no código.');
                 return;
@@ -1399,7 +1566,7 @@
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'text/plain'
                     },
-                    body: `search "${query}"; fields name, cover.url, platforms.name; limit 6;`
+                    body: `search "${query}"; fields name, cover.url, platforms.name; limit 10;`
                 });
 
                 if (response.status === 401) {
@@ -1412,7 +1579,7 @@
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'text/plain'
                         },
-                        body: `search "${query}"; fields name, cover.url, platforms.name; limit 6;`
+                        body: `search "${query}"; fields name, cover.url, platforms.name; limit 10;`
                     });
                 }
 
@@ -1421,103 +1588,161 @@
                 }
 
                 const data = await response.json();
-                renderSuggestions(data);
+                renderSuggestions(data, query);
             } catch (error) {
                 console.error('Erro ao buscar sugestões no IGDB:', error);
             }
         }
 
-        function renderSuggestions(results) {
-            const dropdown = document.getElementById('suggestionsDropdown');
-            dropdown.innerHTML = '';
+        function renderSuggestions(results, query) {
+            const grid = document.getElementById('suggestionsGrid');
+            grid.innerHTML = '';
 
-            if (!results || results.length === 0) {
-                dropdown.style.display = 'none';
+            if (results && results.length > 0) {
+                results.forEach(game => {
+                    const card = document.createElement('div');
+                    card.className = 'suggestion-grid-card';
+                    
+                    let coverUrl = '';
+                    if (game.cover && game.cover.url) {
+                        coverUrl = 'https:' + game.cover.url.replace('t_thumb', 't_cover_big');
+                    } else {
+                        coverUrl = DEFAULT_COVER;
+                    }
+
+                    const platforms = game.platforms || [];
+                    const platformsBadges = platforms.map(plat => `<span style="font-size: 0.6rem; background: rgba(139, 92, 246, 0.85); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);">${plat.name}</span>`).join('');
+
+                    card.innerHTML = `
+                        <img src="${coverUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="Capa">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.4) 70%, transparent 100%); padding: 12px 8px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; z-index: 2;">
+                            ${platformsBadges}
+                        </div>
+                    `;
+
+                    card.addEventListener('click', () => {
+                        const gameObj = {
+                            name: game.name,
+                            coverUrl: coverUrl,
+                            igdbId: game.id,
+                            platforms: platforms,
+                            status: activeMainTab === 'finalizados' ? 'Finalizado' : (activeMainTab === 'dropados' ? 'Dropado' : 'Backlog')
+                        };
+                        selectedGameData = gameObj;
+                        
+                        document.getElementById('gameInput').value = game.name;
+                        showGameDetails(gameObj);
+                    });
+
+                    grid.appendChild(card);
+                });
+            }
+
+            // Sempre adiciona a opção de Jogo Personalizado no final
+            if (query && query.trim().length >= 2) {
+                const customCard = document.createElement('div');
+                customCard.className = 'suggestion-grid-card';
+                customCard.innerHTML = `
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(30, 41, 59, 0.95) 100%); padding: 16px; text-align: center; gap: 12px;">
+                        <span style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🎮</span>
+                        <div style="font-size: 0.9rem; font-weight: 700; color: var(--status-playing); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-height: 1.3; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${query}</div>
+                        <span style="font-size: 0.65rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold; background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">Jogo Personalizado</span>
+                    </div>
+                `;
+                
+                customCard.addEventListener('click', () => {
+                    const gameObj = {
+                        name: query,
+                        coverUrl: '',
+                        igdbId: null,
+                        platforms: [],
+                        status: activeMainTab === 'finalizados' ? 'Finalizado' : (activeMainTab === 'dropados' ? 'Dropado' : 'Backlog')
+                    };
+                    selectedGameData = gameObj;
+                    
+                    document.getElementById('gameInput').value = query;
+                    showGameDetails(gameObj);
+                });
+                
+                grid.appendChild(customCard);
+            }
+        }
+
+        function addGameFromPreview() {
+            if (!selectedGameData) return;
+            
+            const name = selectedGameData.name;
+            const platformInput = document.getElementById('modalPlatformSelect');
+            const platform = platformInput ? platformInput.value.trim() : '';
+
+            // O campo de plataforma é obrigatório
+            if (!platform) {
+                customAlert("Por favor, selecione ou digite a plataforma. Este campo é obrigatório!", "Plataforma Obrigatória", "⚠️");
                 return;
             }
 
-            results.forEach(game => {
-                const item = document.createElement('div');
-                item.className = 'suggestion-item';
-                
-                let coverUrl = '';
-                if (game.cover && game.cover.url) {
-                    // Substitui t_thumb por t_cover_small para obter melhor qualidade
-                    coverUrl = 'https:' + game.cover.url.replace('t_thumb', 't_cover_small');
-                } else {
-                    coverUrl = DEFAULT_COVER;
-                }
+            // Validação de Duplicados (nome e plataforma - case-insensitive)
+            const nameLower = name.toLowerCase();
+            const platformLower = platform.toLowerCase();
+            const isDuplicate = games.some(g => g.name.toLowerCase() === nameLower && (g.platform || '').toLowerCase() === platformLower);
+            
+            if (isDuplicate) {
+                customAlert("Este jogo já está cadastrado para esta plataforma!", "Jogo Duplicado", "⚠️");
+                return;
+            }
 
-                const platforms = game.platforms || [];
-                const platformNames = platforms.map(p => p.name).join(', ') || 'N/A';
+            let newStatus = 'Backlog';
+            let startDate = null;
+            let finishCount = 0;
+            let dropCount = 0;
 
-                item.innerHTML = `
-                    <img src="${coverUrl}" class="suggestion-cover" alt="">
-                    <div class="suggestion-info">
-                        <span class="suggestion-title">${game.name}</span>
-                        <span class="suggestion-platform">${platformNames}</span>
-                    </div>
-                `;
+            if (activeMainTab === 'finalizados') {
+                newStatus = 'Finalizado';
+                startDate = new Date().toISOString();
+                finishCount = 1;
+            } else if (activeMainTab === 'dropados') {
+                newStatus = 'Dropado';
+                startDate = new Date().toISOString();
+                dropCount = 1;
+            }
 
-                item.addEventListener('click', () => {
-                    selectSuggestion(game.name, coverUrl, platforms, game.id);
-                });
-
-                dropdown.appendChild(item);
+            games.push({
+                name,
+                platform,
+                status: newStatus,
+                coverUrl: selectedGameData.coverUrl,
+                igdbId: selectedGameData.igdbId,
+                startDate: startDate,
+                createdAt: new Date().toISOString(),
+                playtime: 0,
+                finishCount: finishCount,
+                dropCount: dropCount
             });
 
-            dropdown.style.display = 'block';
-        }
+            // Limpar inputs e sugestões
+            document.getElementById('gameInput').value = '';
+            document.getElementById('suggestionsGrid').innerHTML = '';
+            selectedGameData = null;
 
-        function selectSuggestion(gameName, coverUrl, platformsArray, igdbId) {
-            const nameInput = document.getElementById('gameInput');
-            const platformInput = document.getElementById('platformInput');
-            const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+            resetPlatformDatalist();
+            save();
+            render();
+            closeDetailsModal();
+            closeAddGameScreen();
 
-            nameInput.value = gameName;
-            selectedGameData = {
-                name: gameName,
-                coverUrl: coverUrl,
-                igdbId: igdbId
-            };
 
-            // Exibe o botão de visualizar informações do jogo selecionado
-            document.getElementById('infoPreviewBtn').style.display = 'flex';
-
-            // Atualiza a datalist com as plataformas do jogo selecionado
-            const datalist = document.getElementById('platformList');
-            datalist.innerHTML = '';
-            
-            if (platformsArray && platformsArray.length > 0) {
-                platformsArray.forEach(plat => {
-                    const option = document.createElement('option');
-                    option.value = plat.name;
-                    datalist.appendChild(option);
-                });
-                platformInput.value = ''; // Deixa vazio para exibir as sugestões da datalist
-            } else {
-                resetPlatformDatalist();
-            }
-
-            suggestionsDropdown.style.display = 'none';
-            platformInput.focus();
-        }
-
-        function previewSelectedGame(event) {
-            if (event) event.stopPropagation();
-            if (selectedGameData) {
-                showGameDetails(selectedGameData);
-            }
         }
 
         function resetPlatformDatalist() {
             const datalist = document.getElementById('platformList');
-            datalist.innerHTML = '';
-            DEFAULT_PLATFORMS.forEach(plat => {
-                const option = document.createElement('option');
-                option.value = plat;
-                datalist.appendChild(option);
-            });
+            if (datalist) {
+                datalist.innerHTML = '';
+                DEFAULT_PLATFORMS.forEach(plat => {
+                    const option = document.createElement('option');
+                    option.value = plat;
+                    datalist.appendChild(option);
+                });
+            }
         }
 
         // --- RENDERIZAÇÃO DOS CARDS ---
@@ -1652,7 +1877,57 @@
                     };
                 }
             } else {
-                if (carouselSection) carouselSection.style.display = 'none';
+                const backlogGames = games.filter(game => game.status === 'Backlog');
+                if (backlogGames.length > 0) {
+                    carouselSection.style.display = 'block';
+                    carouselTrack.innerHTML = '';
+                    carouselDots.innerHTML = '';
+
+                    const recCard = document.createElement('div');
+                    recCard.className = 'carousel-item recommendation-card';
+                    recCard.style.display = 'flex';
+                    recCard.style.flexDirection = 'column';
+                    recCard.style.justifyContent = 'center';
+                    recCard.style.alignItems = 'center';
+                    recCard.style.padding = '20px';
+                    recCard.style.textAlign = 'center';
+                    recCard.style.gap = '14px';
+                    recCard.style.height = '100%';
+                    recCard.style.borderRadius = '16px';
+                    recCard.style.overflow = 'hidden';
+
+                    const firstBacklogGame = backlogGames[0];
+                    const originalIndex = games.indexOf(firstBacklogGame);
+
+                    let coverSrc = firstBacklogGame.coverUrl ? firstBacklogGame.coverUrl.replace('t_cover_small', 't_screenshot_med').replace('t_thumb', 't_screenshot_med').replace('t_cover_big', 't_screenshot_med') : '';
+                    if (!coverSrc) {
+                        coverSrc = DEFAULT_COVER;
+                    }
+
+                    recCard.innerHTML = `
+                        <img src="${coverSrc}" class="carousel-item-img" alt="Capa de ${firstBacklogGame.name}">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.85) 100%); z-index: 1;"></div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #cbd5e1; max-width: 90%; line-height: 1.4; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+                            Que tal iniciar o jogo: <br><strong style="color: var(--status-playing); font-size: 1.25rem;">${firstBacklogGame.name}</strong>?
+                        </div>
+                        <button class="status-action-btn play-btn" style="width: 46px; height: 46px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; background: var(--status-playing); color: #0f172a; border: none; box-shadow: 0 0 12px var(--status-playing); cursor: pointer; z-index: 2; margin-top: 5px;" title="Iniciar Jogo">
+                            ▶
+                        </button>
+                    `;
+
+                    recCard.querySelector('.play-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        updateStatus(originalIndex, 'Jogando');
+                    });
+
+                    recCard.addEventListener('click', () => {
+                        showGameDetails(originalIndex);
+                    });
+
+                    carouselTrack.appendChild(recCard);
+                } else {
+                    if (carouselSection) carouselSection.style.display = 'none';
+                }
             }
 
             // Renderiza a Lista de Finalizados
@@ -1689,9 +1964,20 @@
 
             // Filtra os jogos para exibir apenas os que estão com status 'Backlog' na lista do backlog
             const listGames = games.filter(game => game.status === 'Backlog');
+            const nextTitle = document.getElementById('nextToPlayTitle');
 
             if (listGames.length === 0) {
-                listHome.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 20px; font-size: 0.9rem;">Nenhum jogo no backlog. Adicione um acima!</div>';
+                if (nextTitle) nextTitle.style.display = 'none';
+                listHome.innerHTML = `
+                    <div class="empty-backlog-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(56, 189, 248, 0.25); border-radius: 16px; text-align: center; gap: 14px; margin: 20px 0; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.02); z-index: 1;">
+                        <div style="font-size: 3.2rem; animation: float-icon 3s ease-in-out infinite alternate; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.45));">👾</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-light); margin: 0; letter-spacing: 0.5px;">Adicione jogos ao seu backlog</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 260px; margin: 0; line-height: 1.4;">Comece a sua jornada gamer organizando seus jogos favoritos em um só lugar!</p>
+                        <button class="add-btn" onclick="openAddGameScreen()" style="margin-top: 6px; padding: 10px 20px; border-radius: 8px; font-weight: bold; background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: transform 0.2s;">
+                            <span>+</span> Adicionar Primeiro Jogo
+                        </button>
+                    </div>
+                `;
                 listOthers.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 20px; font-size: 0.9rem;">Nenhum outro jogo listado.</div>';
                 seeMoreContainer.style.display = 'none';
                 if (currentScreen === 'others') {
@@ -1699,6 +1985,8 @@
                 }
                 return;
             }
+
+            if (nextTitle) nextTitle.style.display = 'block';
 
             const homeGames = listGames.slice(0, 5);
             const otherGames = listGames.slice(5);
@@ -1748,7 +2036,7 @@
                 const isDuplicate = games.some(g => g.name.toLowerCase() === nameLower && (g.platform || '').toLowerCase() === platformLower);
                 
                 if (isDuplicate) {
-                    alert("Este jogo já está cadastrado para esta plataforma!");
+                    customAlert("Este jogo já está cadastrado para esta plataforma!", "Jogo Duplicado", "⚠️");
                     return;
                 }
 
@@ -1781,45 +2069,46 @@
                     coverUrl: coverUrl,
                     igdbId: igdbId,
                     startDate: startDate,
+                    createdAt: new Date().toISOString(),
                     playtime: 0,
                     finishCount: finishCount,
                     dropCount: dropCount
                 });
 
-                nameInput.value = '';
-                platformInput.value = '';
-                selectedGameData = null;
-                nameInput.focus();
-
-                // Oculta o botão de preview de informações
-                document.getElementById('infoPreviewBtn').style.display = 'none';
+                closeAddGameScreen();
 
                 resetPlatformDatalist();
                 save();
                 render();
 
-                // Apresenta automaticamente o modal de detalhes do jogo recém-adicionado
-                showGameDetails(games.length - 1);
+
             }
         }
 
         // --- LÓGICA DE BACKUP E OUTROS EVENTOS ---
 
-        function removeGame(index) {
-            if (confirm("Ao excluir o jogo, todas as informações sobre ele também serão excluídas. tem certeza que deseja remover este jogo?")) {
+        async function removeGame(index) {
+            const confirmed = await customConfirm(
+                "Ao excluir o jogo, todas as informações sobre ele também serão excluídas. tem certeza que deseja remover este jogo?",
+                "Excluir Jogo",
+                "🗑️"
+            );
+            if (confirmed) {
                 games.splice(index, 1);
                 save();
                 render();
             }
         }
 
-        function updateStatus(index, newStatus) {
+        async function updateStatus(index, newStatus) {
+            const oldStatus = games[index].status;
+            
             if (newStatus === 'Jogando') {
                 const playingCount = games.filter((g, idx) => g.status === 'Jogando' && idx !== index).length;
                 if (playingCount >= maxPlayingLimit) {
-                    alert(`Você só pode jogar até ${maxPlayingLimit} jogos simultâneamente, finalize um dos jogos em andamento para iniciar outro jogo`);
+                    customAlert(`Você só pode jogar até ${maxPlayingLimit} jogos simultaneamente, finalize um dos jogos em andamento para iniciar outro jogo`, "Limite Excedido", "⚠️");
                     render();
-                    return;
+                    return false;
                 }
                 // Define a data de início automaticamente ao entrar no status Jogando
                 if (!games[index].startDate) {
@@ -1828,14 +2117,82 @@
                 if (games[index].playtime === undefined) {
                     games[index].playtime = 0;
                 }
+                games[index].endDate = null;
             } else if (newStatus === 'Finalizado') {
                 games[index].finishCount = (games[index].finishCount || 0) + 1;
+                games[index].endDate = new Date().toISOString();
+                
+                if (oldStatus === 'Jogando') {
+                    const game = games[index];
+                    const start = game.startDate ? new Date(game.startDate) : new Date();
+                    const end = new Date();
+                    
+                    const diffMs = Math.max(0, end - start);
+                    const diffMins = Math.floor(diffMs / (1000 * 60));
+                    const diffHrs = Math.floor(diffMins / 60);
+                    const hours = diffHrs % 24;
+                    const daysTotal = Math.floor(diffHrs / 24);
+                    
+                    const years = Math.floor(daysTotal / 365);
+                    const days = daysTotal % 365;
+
+                    let durationStr = '';
+                    if (years > 0) {
+                        durationStr = `${years} ${years === 1 ? 'ano' : 'anos'}, ${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+                    } else if (days > 0) {
+                        durationStr = `${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+                    } else {
+                        durationStr = `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+                    }
+
+                    const playtime = game.playtime || 0;
+                    const playtimeStr = `${playtime} ${playtime === 1 ? 'hora' : 'horas'}`;
+                    
+                    const congratulationsMsg = `Parabéns!!\nvocê finalizou o jogo em ${playtimeStr}, durante o período de ${durationStr}.`;
+                    customAlert(congratulationsMsg, "Jogo Finalizado!", "🏆");
+                }
             } else if (newStatus === 'Dropado') {
+                if (oldStatus === 'Jogando') {
+                    const confirmed = await customConfirm(
+                        "Tem certeza que deseja desistir deste jogo?",
+                        "Desistir?",
+                        "❌",
+                        "Sim",
+                        "Não"
+                    );
+                    if (!confirmed) {
+                        return false;
+                    }
+                }
                 games[index].dropCount = (games[index].dropCount || 0) + 1;
+                games[index].endDate = new Date().toISOString();
+            } else if (newStatus === 'Backlog') {
+                const gameToMove = games.splice(index, 1)[0];
+                games.push(gameToMove);
+                const newIndex = games.length - 1;
+
+                games[newIndex].endDate = null;
+                games[newIndex].status = newStatus;
+                save();
+                render();
+
+                // Identifica se o jogo está nos primeiros 5 (Backlog Home) ou nos demais (Outros Jogos)
+                const listGames = games.filter(game => game.status === 'Backlog');
+                const backlogIndex = listGames.indexOf(games[newIndex]);
+                
+                if (backlogIndex >= 5) {
+                    switchMainTab('backlog');
+                    switchView('others');
+                } else {
+                    switchMainTab('backlog');
+                    switchView('home');
+                }
+                return true;
             }
             games[index].status = newStatus;
             save();
             render();
+            return true;
         }
 
         // --- LÓGICA DO MENU SANDUÍCHE E PREFERÊNCIAS ---
@@ -1856,6 +2213,26 @@
             document.getElementById('menuDropdown').style.display = 'none';
         }
 
+        async function clearAllData(event) {
+            if (event) event.preventDefault();
+            document.getElementById('menuDropdown').style.display = 'none';
+
+            const confirmed = await customConfirm(
+                "Atenção: todas as informações sobre seus jogos serão excluídas permanentemente! Só será possível restaurar as informações caso você possua um arquivo de backup (.json).\n\nDeseja realmente apagar todos os dados?",
+                "Limpar Todas as Informações",
+                "⚠️",
+                "Sim, Apagar Tudo",
+                "Não, Cancelar"
+            );
+
+            if (confirmed) {
+                games = [];
+                save();
+                render();
+                customAlert("Todas as informações do aplicativo foram apagadas com sucesso!", "Dados Limpos", "🗑️");
+            }
+        }
+
         function openPreferencesModal(event) {
             if (event) event.preventDefault();
             document.getElementById('menuDropdown').style.display = 'none';
@@ -1873,10 +2250,10 @@
                 maxPlayingLimit = inputVal;
                 localStorage.setItem('max_playing_limit', maxPlayingLimit.toString());
                 closePreferencesModal();
-                alert('Preferências salvas com sucesso!');
+                customAlert('Preferências salvas com sucesso!', 'Sucesso', '⚙️');
                 render(); // atualiza possíveis exibições que usem a contagem
             } else {
-                alert('Por favor, insira um valor válido (maior ou igual a 1).');
+                customAlert('Por favor, insira um valor válido (maior ou igual a 1).', 'Erro', '❌');
             }
         }
 
@@ -1925,7 +2302,7 @@
 
         async function exportData() {
             if (games.length === 0) {
-                alert("Não há dados para exportar!");
+                customAlert("Não há dados para exportar!", "Aviso", "⚠️");
                 return;
             }
             
@@ -1973,7 +2350,7 @@
                 } catch (e) {
                     // 4. Último recurso: Copiar para área de transferência
                     navigator.clipboard.writeText(dataStr);
-                    alert("Devido às restrições do seu navegador local, não pudemos iniciar o download direto. O backup em formato de texto foi copiado para sua Área de Transferência. Cole em um arquivo de texto para salvar!");
+                    customAlert("Devido às restrições do seu navegador local, não pudemos iniciar o download direto. O backup em formato de texto foi copiado para sua Área de Transferência. Cole em um arquivo de texto para salvar!", "Aviso de Download", "💾");
                 }
             }
         }
@@ -1991,12 +2368,12 @@
                         games = importedData;
                         save();
                         render();
-                        alert("Backup importado com sucesso!");
+                        customAlert("Backup importado com sucesso!", "Importação Concluída", "✅");
                     } else {
-                        alert("O formato do arquivo parece incorreto.");
+                        customAlert("O formato do arquivo parece incorreto.", "Erro de Importação", "❌");
                     }
                 } catch (error) {
-                    alert("Erro ao ler o arquivo de backup.");
+                    customAlert("Erro ao ler o arquivo de backup.", "Erro de Leitura", "❌");
                 }
             };
             
@@ -2010,12 +2387,10 @@
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
             
-            // Oculta o botão de preview e limpa o jogo selecionado ao digitar
-            document.getElementById('infoPreviewBtn').style.display = 'none';
             selectedGameData = null;
 
             if (query.length < 2) {
-                document.getElementById('suggestionsDropdown').style.display = 'none';
+                document.getElementById('suggestionsGrid').innerHTML = '';
                 return;
             }
 
@@ -2024,18 +2399,7 @@
             }, 400);
         });
 
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('suggestionsDropdown');
-            const gameInput = document.getElementById('gameInput');
-            if (e.target !== dropdown && e.target !== gameInput) {
-                dropdown.style.display = 'none';
-            }
-        });
-
         document.getElementById('gameInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') addGame();
-        });
-        document.getElementById('platformInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') addGame();
         });
 
@@ -2115,16 +2479,66 @@
             return data && data.length > 0 ? data[0].id : null;
         }
 
+        function formatDurationMessage(game) {
+            const start = game.startDate ? new Date(game.startDate) : new Date();
+            const end = (game.status === 'Finalizado' || game.status === 'Dropado') && game.endDate ? new Date(game.endDate) : new Date();
+            
+            const diffMs = Math.max(0, end - start);
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHrs = Math.floor(diffMins / 60);
+            const hours = diffHrs % 24;
+            const daysTotal = Math.floor(diffHrs / 24);
+            
+            const years = Math.floor(daysTotal / 365);
+            const days = daysTotal % 365;
+
+            let prefix = 'Você está jogando este jogo há ';
+            if (game.status === 'Finalizado' || game.status === 'Dropado') {
+                prefix = 'Você jogou este jogo por ';
+            }
+
+            let durationStr = '';
+            if (years > 0) {
+                durationStr = `${years} ${years === 1 ? 'ano' : 'anos'}, ${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            } else if (days > 0) {
+                durationStr = `${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            } else {
+                durationStr = `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            }
+
+            return `${prefix}${durationStr}`;
+        }
+
+        function getBacklogDurationMessage(game) {
+            const created = game.createdAt ? new Date(game.createdAt) : new Date();
+            const now = new Date();
+            
+            const diffMs = Math.max(0, now - created);
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHrs = Math.floor(diffMins / 60);
+            const hours = diffHrs % 24;
+            const daysTotal = Math.floor(diffHrs / 24);
+            
+            const years = Math.floor(daysTotal / 365);
+            const days = daysTotal % 365;
+
+            let durationStr = '';
+            if (years > 0) {
+                durationStr = `${years} ${years === 1 ? 'ano' : 'anos'}, ${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            } else if (days > 0) {
+                durationStr = `${days} ${days === 1 ? 'dia' : 'dias'} e ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            } else {
+                durationStr = `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+            }
+
+            return `Este jogo já está há ${durationStr} em seu backlog`;
+        }
+
         function getPlayingControlsHtml(game, index) {
             if (game.status !== 'Jogando' && game.status !== 'Finalizado' && game.status !== 'Dropado') return '';
 
             // Calcular tempo de jogo
             const start = game.startDate ? new Date(game.startDate) : new Date();
-            const now = new Date();
-            const diffMs = Math.max(0, now - start);
-            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-            const days = Math.floor(diffHrs / 24);
-            const hours = diffHrs % 24;
 
             // Formata data de início para input datetime-local em fuso horário local (YYYY-MM-DDTHH:MM)
             const tzoffset = start.getTimezoneOffset() * 60000;
@@ -2162,7 +2576,7 @@
                     </div>
 
                     <div style="font-size: 0.9rem; color: ${textColor}; font-weight: 600; text-align: center; padding: 4px 0;">
-                        ⏳ Você está jogando este jogo há ${days} dias e ${hours} horas.
+                        ⏳ ${formatDurationMessage(game)}.
                     </div>
 
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 10px;">
@@ -2173,9 +2587,11 @@
             `;
         }
 
-        function changeStatusFromModal(index, newStatus) {
-            updateStatus(index, newStatus);
-            closeDetailsModal();
+        async function changeStatusFromModal(index, newStatus) {
+            const success = await updateStatus(index, newStatus);
+            if (success) {
+                closeDetailsModal();
+            }
         }
 
         function updateStartDateFromModal(index, newDateString) {
@@ -2196,22 +2612,35 @@
 
         function getRecordControlHtml(game, index) {
             if (index === -1) return '';
+            
+            let backlogDurationHtml = '';
+            if (game.status === 'Backlog') {
+                backlogDurationHtml = `
+                    <div class="backlog-duration-box" style="background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #cbd5e1; font-weight: 600; text-align: center;">
+                        📅 ${getBacklogDurationMessage(game)}.
+                    </div>
+                `;
+            }
+            
             const isReadOnly = game.status !== 'Jogando';
+            let recordHtml = '';
             if (isReadOnly) {
-                return `
+                recordHtml = `
                     <div class="modal-record-container" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                         <label style="font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">Recorde:</label>
                         <span style="font-size: 1.1rem; font-weight: 800; color: var(--text-light);">${game.record || 0}</span>
                     </div>
                 `;
             } else {
-                return `
+                recordHtml = `
                     <div class="modal-record-container" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                         <label style="font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">Recorde:</label>
                         <input type="number" id="modalRecordInput" value="${game.record || 0}" min="0" onchange="updateRecordFromModal(${index}, this.value)" style="width: 100px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; text-align: center; font-weight: bold;">
                     </div>
                 `;
             }
+            
+            return backlogDurationHtml + recordHtml;
         }
 
         function updateRecordFromModal(index, value) {
@@ -2338,17 +2767,40 @@
 
             const recordControl = getRecordControlHtml(game, index);
 
+            let addGameButtonHtml = '';
+            if (index === -1) {
+                const plats = (selectedGameData && selectedGameData.platforms && selectedGameData.platforms.length > 0)
+                    ? selectedGameData.platforms.map(p => p.name)
+                    : DEFAULT_PLATFORMS;
+                const optionsHtml = plats.map(plat => `<option value="${plat}"></option>`).join('');
+
+                addGameButtonHtml = `
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Plataforma *</label>
+                            <input type="text" id="modalPlatformSelect" placeholder="Selecione ou digite a plataforma..." list="modalPlatformDatalist" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 0.9rem; font-weight: bold;" required>
+                            <datalist id="modalPlatformDatalist">
+                                ${optionsHtml}
+                            </datalist>
+                        </div>
+                        <button class="add-btn" style="width: 100%; padding: 10px; font-weight: bold; border-radius: 8px; margin-top: 6px;" onclick="addGameFromPreview()">
+                            📥 Adicionar ao ${activeMainTab === 'finalizados' ? 'Finalizados' : (activeMainTab === 'dropados' ? 'Dropados' : 'Backlog')}
+                        </button>
+                    </div>
+                `;
+            }
+
             content.innerHTML = `
                 <div class="modal-hero">
                     <img src="${coverSrc}" class="modal-hero-cover" alt="Capa">
                     <div class="modal-hero-info">
                         <h2 class="modal-title">${game.name}</h2>
                         <div class="modal-meta-row">
-                            <span class="modal-badge badge-year">${game.platform ? game.platform : 'Sem Plataforma'}</span>
                         </div>
                     </div>
                 </div>
                 <div class="modal-content-body">
+                    ${addGameButtonHtml}
                     ${statsHtml}
                     ${recordControl}
                     ${playingControls}
@@ -2449,13 +2901,35 @@
 
             const recordControl = getRecordControlHtml(game, index);
 
+            let addGameButtonHtml = '';
+            if (index === -1) {
+                const plats = (selectedGameData && selectedGameData.platforms && selectedGameData.platforms.length > 0)
+                    ? selectedGameData.platforms.map(p => p.name)
+                    : DEFAULT_PLATFORMS;
+                const optionsHtml = plats.map(plat => `<option value="${plat}"></option>`).join('');
+
+                addGameButtonHtml = `
+                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">Plataforma *</label>
+                            <input type="text" id="modalPlatformSelect" placeholder="Selecione ou digite a plataforma..." list="modalPlatformDatalist" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 0.9rem; font-weight: bold;" required>
+                            <datalist id="modalPlatformDatalist">
+                                ${optionsHtml}
+                            </datalist>
+                        </div>
+                        <button class="add-btn" style="width: 100%; padding: 10px; font-weight: bold; border-radius: 8px; margin-top: 6px;" onclick="addGameFromPreview()">
+                            📥 Adicionar ao ${activeMainTab === 'finalizados' ? 'Finalizados' : (activeMainTab === 'dropados' ? 'Dropados' : 'Backlog')}
+                        </button>
+                    </div>
+                `;
+            }
+
             content.innerHTML = `
                 <div class="modal-hero">
                     <img src="${coverSrc}" class="modal-hero-cover" alt="Capa">
                     <div class="modal-hero-info">
                         <h2 class="modal-title">${details.name || game.name}</h2>
                         <div class="modal-meta-row">
-                            <span class="modal-badge badge-year">${game.platform ? game.platform : 'Sem Plataforma'}</span>
                             ${releaseYear !== 'N/A' ? `<span class="modal-badge badge-year">${releaseYear}</span>` : ''}
                             ${details.rating ? `<span class="modal-badge badge-rating">★ ${ratingText}</span>` : ''}
                             ${devCompany ? `<span class="modal-badge badge-developer" title="${devCompany}">${devCompany}</span>` : ''}
@@ -2463,6 +2937,7 @@
                     </div>
                 </div>
                 <div class="modal-content-body">
+                    ${addGameButtonHtml}
                     ${statsHtml}
                     ${recordControl}
                     ${playingControls}
