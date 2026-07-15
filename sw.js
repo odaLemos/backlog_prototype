@@ -1,0 +1,57 @@
+const CACHE_NAME = 'backlog-v1';
+const ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './manifest.json',
+    './icon.svg'
+];
+
+// Instalação do Service Worker e caching de arquivos estáticos
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Arquivos em cache com sucesso.');
+                return cache.addAll(ASSETS);
+            })
+    );
+    self.skipWaiting();
+});
+
+// Ativação e limpeza de caches antigos
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        console.log('Limpando cache antigo:', cache);
+                        return caches.delete(cache);
+                    }
+                })
+            );
+        })
+    );
+    self.clients.claim();
+});
+
+// Intercepção de requisições e resposta offline
+self.addEventListener('fetch', event => {
+    // Não intercepta chamadas de API (IGDB, corsproxy ou tradução)
+    if (
+        event.request.url.includes('api.igdb.com') || 
+        event.request.url.includes('corsproxy.io') || 
+        event.request.url.includes('id.twitch.tv')
+    ) {
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                return response || fetch(event.request);
+            })
+    );
+});
