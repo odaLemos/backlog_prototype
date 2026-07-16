@@ -1,4 +1,4 @@
-const CACHE_NAME = 'backlog-v4';
+const CACHE_NAME = 'onboarding-v5';
 const ASSETS = [
     './',
     './index.html',

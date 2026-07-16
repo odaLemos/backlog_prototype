@@ -1053,8 +1053,10 @@ if ('serviceWorker' in navigator) {
             if (confirmed) {
                 games = [];
                 save();
+                localStorage.removeItem('backlog_first_access_completed');
                 render();
                 customAlert("Todas as informações do aplicativo foram apagadas com sucesso!", "Dados Limpos", "🗑️");
+                showOnboarding();
             }
         }
 
@@ -1839,5 +1841,97 @@ if ('serviceWorker' in navigator) {
             }
         }
 
+        // --- ONBOARDING (BOAS-VINDAS) ---
+        let currentOnboardingSlide = 0;
+        const totalOnboardingSlides = 3;
+
+        function showOnboarding() {
+            currentOnboardingSlide = 0;
+            updateOnboardingSlides();
+            const modal = document.getElementById('onboardingModal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeOnboarding() {
+            const modal = document.getElementById('onboardingModal');
+            if (modal) modal.classList.remove('active');
+            localStorage.setItem('backlog_first_access_completed', 'true');
+        }
+
+        function startAppAndAddGame() {
+            closeOnboarding();
+            openAddGameScreen();
+        }
+
+        function updateOnboardingSlides() {
+            for (let i = 1; i <= totalOnboardingSlides; i++) {
+                const slide = document.getElementById(`onboardingSlide${i}`);
+                if (slide) {
+                    if (i - 1 === currentOnboardingSlide) {
+                        slide.style.display = 'flex';
+                        slide.classList.add('active');
+                    } else {
+                        slide.style.display = 'none';
+                        slide.classList.remove('active');
+                    }
+                }
+            }
+
+            // Update dots
+            const dots = document.getElementById('onboardingDots').querySelectorAll('.carousel-dot');
+            dots.forEach((dot, index) => {
+                if (index === currentOnboardingSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+
+            // Update buttons
+            const backBtn = document.getElementById('onboardingBackBtn');
+            const nextBtn = document.getElementById('onboardingNextBtn');
+
+            if (backBtn) {
+                backBtn.disabled = currentOnboardingSlide === 0;
+            }
+
+            if (nextBtn) {
+                if (currentOnboardingSlide === totalOnboardingSlides - 1) {
+                    nextBtn.textContent = 'Começar';
+                } else {
+                    nextBtn.textContent = 'Avançar';
+                }
+            }
+        }
+
+        function goToOnboardingSlide(slideIndex) {
+            currentOnboardingSlide = slideIndex;
+            updateOnboardingSlides();
+        }
+
+        function nextOnboardingSlide() {
+            if (currentOnboardingSlide < totalOnboardingSlides - 1) {
+                currentOnboardingSlide++;
+                updateOnboardingSlides();
+            } else {
+                closeOnboarding();
+            }
+        }
+
+        function prevOnboardingSlide() {
+            if (currentOnboardingSlide > 0) {
+                currentOnboardingSlide--;
+                updateOnboardingSlides();
+            }
+        }
+
+        function checkFirstAccess() {
+            const firstAccessCompleted = localStorage.getItem('backlog_first_access_completed');
+            if (!firstAccessCompleted) {
+                showOnboarding();
+            }
+        }
+
         resetPlatformDatalist();
         render();
+        checkFirstAccess();
