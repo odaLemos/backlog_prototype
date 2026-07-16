@@ -17,6 +17,16 @@
             <div class="menu-container">
                 <button id="menuBtn" class="menu-btn" onclick="toggleMenu(event)">☰</button>
                 <div id="menuDropdown" class="menu-dropdown" style="display: none;">
+                    <div style="padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Tema do App</label>
+                        <select id="themeSelect" onchange="changeTheme(this.value)" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; transition: border 0.2s;">
+                            <option value="default">Padrão</option>
+                            <option value="nintendont">Nintendont</option>
+                            <option value="play">Play</option>
+                            <option value="x-theme">X-Theme</option>
+                            <option value="vapor">Vapor</option>
+                        </select>
+                    </div>
                     <a href="#" onclick="triggerImport(event)">⬆ Importar Backup</a>
                     <a href="#" onclick="exportData(); toggleMenu(event);">⬇ Exportar Backup</a>
                     <a href="#" onclick="openPreferencesModal(event)">⚙️ Preferências</a>

@@ -1085,6 +1085,10 @@ if ('serviceWorker' in navigator) {
                 games = [];
                 save();
                 localStorage.removeItem('backlog_first_access_completed');
+                localStorage.removeItem('app_theme');
+                changeTheme('default');
+                const themeSelect = document.getElementById('themeSelect');
+                if (themeSelect) themeSelect.value = 'default';
                 render();
                 customAlert("Todas as informações do aplicativo foram apagadas com sucesso!", "Dados Limpos", "🗑️");
                 showOnboarding();
@@ -1977,6 +1981,25 @@ if ('serviceWorker' in navigator) {
             }
         });
 
+        // --- GERENCIAMENTO DE TEMAS ---
+        function changeTheme(themeName) {
+            document.body.classList.remove('theme-nintendont', 'theme-play', 'theme-xtheme', 'theme-vapor');
+            if (themeName !== 'default') {
+                document.body.classList.add(`theme-${themeName}`);
+            }
+            localStorage.setItem('app_theme', themeName);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('app_theme') || 'default';
+            changeTheme(savedTheme);
+            const selectEl = document.getElementById('themeSelect');
+            if (selectEl) {
+                selectEl.value = savedTheme;
+            }
+        }
+
         resetPlatformDatalist();
         render();
+        loadTheme();
         checkFirstAccess();
