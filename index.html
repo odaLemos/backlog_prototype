@@ -160,6 +160,85 @@
         </div>
     </div>
 
+    <!-- Modal de Boas-Vindas (Primeiro Acesso) -->
+    <div id="onboardingModal" class="modal-overlay" style="z-index: 1300;">
+        <div class="modal-container" style="max-width: 500px; padding: 30px; text-align: center; justify-content: space-between; min-height: 480px;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeOnboarding()">✕</button>
+            
+            <div id="onboardingSlidesContainer" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+                <!-- Slide 1 -->
+                <div class="onboarding-slide active" id="onboardingSlide1" style="display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+                    <div style="font-size: 3.5rem; filter: drop-shadow(0 4px 12px rgba(139,92,246,0.3));">Bem-vindo! 🎮</div>
+                    <h2 class="modal-title" style="font-size: 1.5rem; margin: 0; color: white;">Meu Backlog</h2>
+                    <p style="color: var(--text-light); font-size: 0.95rem; line-height: 1.6; max-width: 360px; margin: 0;">
+                        O lugar perfeito para gerenciar, planejar e celebrar a sua jornada gamer. Nunca mais se perca em meio a tantos títulos e plataformas!
+                    </p>
+                </div>
+                
+                <!-- Slide 2 -->
+                <div class="onboarding-slide" id="onboardingSlide2" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+                    <div style="font-size: 3.5rem; filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3)); font-weight: bold; color: var(--primary);">🏆</div>
+                    <h2 class="modal-title" style="font-size: 1.5rem; margin: 0; color: white;">Principais Recursos</h2>
+                    <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; width: 100%; max-width: 380px; margin-top: 10px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-start;">
+                            <span style="font-size: 1.3rem; line-height: 1;">📋</span>
+                            <div>
+                                <strong style="color: var(--primary); font-size: 0.9rem;">Organize seu Backlog</strong>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Planeje os próximos jogos da fila, ordene e filtre conforme preferir.</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: flex-start;">
+                            <span style="font-size: 1.3rem; line-height: 1;">⏳</span>
+                            <div>
+                                <strong style="color: var(--status-playing); font-size: 0.9rem;">Controle de Sessão</strong>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Registre a data de início, tempo de jogo em horas e gerencie os títulos ativos.</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: flex-start;">
+                            <span style="font-size: 1.3rem; line-height: 1;">⬇️</span>
+                            <div>
+                                <strong style="color: var(--status-dropped); font-size: 0.9rem;">Status Detalhados</strong>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Acompanhe jogos finalizados e dropados com estatísticas exclusivas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3 -->
+                <div class="onboarding-slide" id="onboardingSlide3" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #4ade80; max-width: 360px; line-height: 1.4; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                        Aproveite o aplicativo e divirta-se! 🎉
+                    </div>
+                    
+                    <!-- Caixa de inclusão de jogo existente -->
+                    <div class="empty-backlog-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(56, 189, 248, 0.25); border-radius: 16px; text-align: center; gap: 12px; width: 100%; max-width: 380px; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.02);">
+                        <div style="font-size: 2.5rem; animation: float-icon 3s ease-in-out infinite alternate; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));">👾</div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-light); margin: 0; letter-spacing: 0.5px;">Adicione jogos ao seu backlog</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); max-width: 260px; margin: 0; line-height: 1.4;">Comece a sua jornada gamer organizando seus jogos favoritos em um só lugar!</p>
+                        <button class="add-btn" onclick="startAppAndAddGame()" style="margin-top: 4px; padding: 10px 18px; border-radius: 8px; font-weight: bold; background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: transform 0.2s; font-size: 0.85rem;">
+                            <span>+</span> Adicionar Primeiro Jogo
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Indicadores e Botões de Ação do Onboarding -->
+            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+                <!-- Dots -->
+                <div style="display: flex; justify-content: center; gap: 8px;" id="onboardingDots">
+                    <span class="carousel-dot active" onclick="goToOnboardingSlide(0)"></span>
+                    <span class="carousel-dot" onclick="goToOnboardingSlide(1)"></span>
+                    <span class="carousel-dot" onclick="goToOnboardingSlide(2)"></span>
+                </div>
+                
+                <div style="display: flex; gap: 12px; width: 100%;">
+                    <button class="backup-btn" style="flex: 1; padding: 10px 20px; border-color: rgba(255,255,255,0.15);" id="onboardingBackBtn" onclick="prevOnboardingSlide()" disabled>Voltar</button>
+                    <button class="add-btn" style="flex: 1; padding: 10px 20px;" id="onboardingNextBtn" onclick="nextOnboardingSlide()">Avançar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script defer src="app.js"></script>
 </body>
 </html>
