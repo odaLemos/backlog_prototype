@@ -172,7 +172,7 @@ if ('serviceWorker' in navigator) {
             }
 
             // Move o botão circular "+" para o âncora da aba ativa
-            const plusBtn = document.querySelector('.add-game-circle-btn');
+            const plusBtn = document.getElementById('mainAddGameBtn');
             if (plusBtn) {
                 if (tabName === 'backlog') {
                     const anchor = document.getElementById('backlogInputAnchor');
