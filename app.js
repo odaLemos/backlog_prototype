@@ -31,8 +31,7 @@ if ('serviceWorker' in navigator) {
             PROXY_URL: 'https://corsproxy.io/?url='
         };
 
-        // Capa padrão (SVG Base64) para jogos sem imagem cadastrada
-        const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48" fill="none"><rect width="36" height="48" rx="6" fill="%231e293b"/><path d="M10 24H14M12 22V26M22 23.5C22 23.2239 22.2239 23 22.5 23C22.7761 23 23 23.2239 23 23.5C23 23.7761 22.7761 24 22.5 24C22.2239 24 22 23.7761 22 23.5ZM24 24.5C24 24.2239 24.2239 24 24.5 24C24.7761 24 25 24.2239 25 24.5C25 24.7761 24.7761 25 24.5 25C24.2239 25 24 24.7761 24 24.5ZM11 20C13 18 23 18 25 20C27 22 27 25 25 27C23.5 28.5 21 28.5 19 28H17C15 28.5 12.5 28.5 11 27C9 25 9 22 11 20Z" stroke="%23475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        const DEFAULT_COVER = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTYwIiB2aWV3Qm94PSIwIDAgMTIwIDE2MCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxNjAiIHJ4PSIxMiIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNNDAgNzBINTZNNDggNjJWNzhNODAgNzJDODAgNzAuODk1NCA4MC44OTU0IDcwIDgyIDcwQzgzLjEwNDYgNzAgODQgNzAuODk1NCA4NCA3MkM4NCA3My4xMDQ2IDgzLjEwNDYgNzQgODIgNzRDODAuODk1NCA3NCA4MCA3My4xMDQ2IDgwIDcyWk04OCA3NkM4OCA3NC44OTU0IDg4Ljg5NTQgNzQgOTAgNzRDOTEuMTA0NiA3NCA5MiA3NC44OTU0IDkyIDc2QzkyIDc3LjEwNDYgOTEuMTA0NiA3OCA5MCA3OEM4OC44OTU0IDc4IDg4IDc3LjEwNDYgODggNzZaTTQyIDU0QzQ4IDQ2IDcyIDQ2IDc4IDU0Qzg0IDYyIDg0IDc4IDc4IDgyQzczLjUgODggNjYgODggNjAgODZINTRDNDggODggNDAuNSA4OCAzNiA4MkMzMCA3NCAzMCA2MiA4MiA1NFoiIHN0cm9rZT0iIzQ3NTU2OSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48dGV4dCB4PSI2MCIgeT0iMTE1IiBmaWxsPSIjNjQ3NDhiIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SU1BR0VNPC90ZXh0Pjx0ZXh0IHg9IjYwIiB5PSIxMjciIGZpbGw9IiM2NDc0OGIiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JTkRJU1BPTsONVkVMPC90ZXh0Pjwvc3ZnPg==`;
         const DEFAULT_PLATFORMS = ['PC', 'PS5', 'PS4', 'Switch', 'Xbox', 'SNES'];
 
         let games = JSON.parse(localStorage.getItem('backlog_oda_mobile')) || [];
@@ -40,6 +39,9 @@ if ('serviceWorker' in navigator) {
         let selectedGameData = null;
         let searchTimeout = null;
         let maxPlayingLimit = parseInt(localStorage.getItem('max_playing_limit')) || 3;
+        let suggestionsOffset = 0;
+        let isFetchingSuggestions = false;
+        let allSuggestionsResults = [];
 
         function save() {
             localStorage.setItem('backlog_oda_mobile', JSON.stringify(games));
@@ -308,11 +310,14 @@ if ('serviceWorker' in navigator) {
             return token;
         }
 
-        async function fetchSuggestions(query) {
+        async function fetchSuggestions(query, isAppend = false) {
             if (!IGDB_CONFIG.CLIENT_ID || !IGDB_CONFIG.CLIENT_SECRET) {
                 console.warn('IGDB API: Client ID ou Client Secret não configurados no código.');
                 return;
             }
+
+            if (isFetchingSuggestions) return;
+            isFetchingSuggestions = true;
 
             const targetUrl = 'https://api.igdb.com/v4/games';
             const url = IGDB_CONFIG.PROXY_URL ? (IGDB_CONFIG.PROXY_URL + encodeURIComponent(targetUrl)) : targetUrl;
@@ -320,6 +325,9 @@ if ('serviceWorker' in navigator) {
             try {
                 let token = await getAccessToken();
                 
+                const offset = isAppend ? suggestionsOffset : 0;
+                const requestBody = `search "${query}"; fields name, cover.url, platforms.name; limit 10; offset ${offset};`;
+
                 let response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -327,7 +335,7 @@ if ('serviceWorker' in navigator) {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'text/plain'
                     },
-                    body: `search "${query}"; fields name, cover.url, platforms.name; limit 10;`
+                    body: requestBody
                 });
 
                 if (response.status === 401) {
@@ -340,7 +348,7 @@ if ('serviceWorker' in navigator) {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'text/plain'
                         },
-                        body: `search "${query}"; fields name, cover.url, platforms.name; limit 10;`
+                        body: requestBody
                     });
                 }
 
@@ -349,9 +357,19 @@ if ('serviceWorker' in navigator) {
                 }
 
                 const data = await response.json();
-                renderSuggestions(data, query);
+                
+                if (isAppend) {
+                    allSuggestionsResults = allSuggestionsResults.concat(data);
+                } else {
+                    allSuggestionsResults = data;
+                }
+                
+                suggestionsOffset = allSuggestionsResults.length;
+                renderSuggestions(allSuggestionsResults, query);
             } catch (error) {
                 console.error('Erro ao buscar sugestões no IGDB:', error);
+            } finally {
+                isFetchingSuggestions = false;
             }
         }
 
@@ -597,6 +615,19 @@ if ('serviceWorker' in navigator) {
         }
 
         function render() {
+            // Atualiza os contadores das abas
+            const countBacklog = games.filter(g => g.status === 'Backlog' || g.status === 'Jogando').length;
+            const countFinalizados = games.filter(g => g.status === 'Finalizado').length;
+            const countDropados = games.filter(g => g.status === 'Dropado').length;
+
+            const badgeBacklog = document.getElementById('badgeBacklogCount');
+            const badgeFinalizados = document.getElementById('badgeFinalizadosCount');
+            const badgeDropados = document.getElementById('badgeDropadosCount');
+
+            if (badgeBacklog) badgeBacklog.textContent = countBacklog;
+            if (badgeFinalizados) badgeFinalizados.textContent = countFinalizados;
+            if (badgeDropados) badgeDropados.textContent = countDropados;
+
             const listHome = document.getElementById('gameListHome');
             const listOthers = document.getElementById('gameListOthers');
             const seeMoreContainer = document.getElementById('seeMoreContainer');
@@ -1218,10 +1249,14 @@ if ('serviceWorker' in navigator) {
 
             if (query.length < 2) {
                 document.getElementById('suggestionsGrid').innerHTML = '';
+                suggestionsOffset = 0;
+                allSuggestionsResults = [];
                 return;
             }
 
             searchTimeout = setTimeout(() => {
+                suggestionsOffset = 0;
+                allSuggestionsResults = [];
                 fetchSuggestions(query);
             }, 400);
         });
@@ -1396,11 +1431,6 @@ if ('serviceWorker' in navigator) {
             return `
                 <div class="playing-modal-controls" style="background: ${boxBg}; border: 1px solid ${boxBorder}; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px;">
                     ${actionButtons}
-                    
-                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
-                        <label style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">Data de Início:</label>
-                        <input type="datetime-local" id="modalStartDateInput" value="${localISOTime}" onchange="updateStartDateFromModal(${index}, this.value)" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 0.9rem;">
-                    </div>
 
                     <div style="font-size: 0.9rem; color: ${textColor}; font-weight: 600; text-align: center; padding: 4px 0;">
                         ⏳ ${formatDurationMessage(game)}.
@@ -1931,6 +1961,21 @@ if ('serviceWorker' in navigator) {
                 showOnboarding();
             }
         }
+
+        // Listener de Scroll para carregar mais sugestões (Paginação)
+        window.addEventListener('scroll', () => {
+            if (currentScreen === 'addGame' && !isFetchingSuggestions && suggestionsOffset > 0 && suggestionsOffset < 30) {
+                const threshold = 150; // pixels da borda inferior
+                const position = window.innerHeight + window.scrollY;
+                const height = document.documentElement.scrollHeight;
+                if (height - position < threshold) {
+                    const query = document.getElementById('gameInput').value.trim();
+                    if (query.length >= 2) {
+                        fetchSuggestions(query, true);
+                    }
+                }
+            }
+        });
 
         resetPlatformDatalist();
         render();

@@ -27,9 +27,9 @@
 
         <!-- Menu de Navegação por Abas -->
         <div class="nav-tabs">
-            <button id="tabBacklog" class="tab-btn active" onclick="switchMainTab('backlog')">📋 Backlog</button>
-            <button id="tabFinalizados" class="tab-btn" onclick="switchMainTab('finalizados')">🏆 Finalizados</button>
-            <button id="tabDropados" class="tab-btn" onclick="switchMainTab('dropados')"><span class="icon-dropped">⬇</span> Dropados</button>
+            <button id="tabBacklog" class="tab-btn active" onclick="switchMainTab('backlog')">📋 Backlog <span class="tab-badge" id="badgeBacklogCount">0</span></button>
+            <button id="tabFinalizados" class="tab-btn" onclick="switchMainTab('finalizados')">🏆 Finalizados <span class="tab-badge" id="badgeFinalizadosCount">0</span></button>
+            <button id="tabDropados" class="tab-btn" onclick="switchMainTab('dropados')"><span class="icon-dropped">⬇</span> Dropados <span class="tab-badge" id="badgeDropadosCount">0</span></button>
         </div>
 
         <!-- Home View -->
@@ -61,15 +61,15 @@
 
         <!-- Others View -->
         <div id="othersView" class="view-section" style="display: none; opacity: 0; transform: translateY(10px);">
-            <div class="view-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <button class="back-btn" onclick="switchView('home')" style="margin-bottom: 0;">← Voltar</button>
+            <div class="view-header" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; align-items: flex-start;">
                 <h2 class="carousel-section-title title-backlog" style="margin-bottom: 0;">Backlog</h2>
+                <button class="back-btn" onclick="switchView('home')" style="margin-bottom: 0;">← Voltar</button>
             </div>
             
             <div id="gameListOthers" class="list-container"></div>
 
             <div style="margin-top: 20px; text-align: center;">
-                <button class="back-btn" onclick="switchView('home')">← Voltar</button>
+                <button class="add-game-circle-btn" onclick="openAddGameScreen()" style="position: static; margin: 0 auto;">+</button>
             </div>
         </div>
 
