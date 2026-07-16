@@ -2,7 +2,22 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registrado com sucesso:', reg.scope))
+            .then(reg => {
+                console.log('Service Worker registrado com sucesso:', reg.scope);
+                // Escuta atualizações do service worker
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // Novo conteúdo está disponível, recarrega a página automaticamente
+                                console.log('Novo Service Worker instalado. Recarregando a página...');
+                                window.location.reload();
+                            }
+                        }
+                    };
+                };
+            })
             .catch(err => console.error('Erro ao registrar Service Worker:', err));
     });
 }
@@ -40,7 +55,7 @@ if ('serviceWorker' in navigator) {
 
                 titleEl.textContent = title;
                 msgEl.textContent = message;
-                iconEl.textContent = icon;
+                iconEl.innerHTML = icon;
                 buttonsEl.innerHTML = `
                     <button class="add-btn" style="flex: 1; padding: 10px 20px;" id="customDialogOkBtn">OK</button>
                 `;
@@ -69,7 +84,7 @@ if ('serviceWorker' in navigator) {
 
                 titleEl.textContent = title;
                 msgEl.textContent = message;
-                iconEl.textContent = icon;
+                iconEl.innerHTML = icon;
                 buttonsEl.innerHTML = `
                     <button class="backup-btn" style="flex: 1; padding: 10px 20px; border-color: rgba(255,255,255,0.15);" id="customDialogCancelBtn">${cancelText}</button>
                     <button class="add-btn" style="flex: 1; padding: 10px 20px; background: var(--status-dropped); border-color: rgba(239, 68, 68, 0.4);" id="customDialogConfirmBtn">${confirmText}</button>
@@ -476,7 +491,19 @@ if ('serviceWorker' in navigator) {
             closeDetailsModal();
             closeAddGameScreen();
 
-
+            if (newStatus === 'Backlog') {
+                const backlogGames = games.filter(g => g.status === 'Backlog');
+                switchMainTab('backlog');
+                if (backlogGames.length > 5) {
+                    switchView('others');
+                } else {
+                    switchView('home');
+                }
+            } else if (newStatus === 'Finalizado') {
+                switchMainTab('finalizados');
+            } else if (newStatus === 'Dropado') {
+                switchMainTab('dropados');
+            }
         }
 
         function resetPlatformDatalist() {
@@ -547,6 +574,28 @@ if ('serviceWorker' in navigator) {
             return card;
         }
 
+        function createGridGameCard(game, index) {
+            const card = document.createElement('div');
+            card.className = 'suggestion-grid-card';
+            card.dataset.index = index;
+
+            const coverSrc = game.coverUrl ? game.coverUrl : DEFAULT_COVER;
+
+            card.innerHTML = `
+                <img src="${coverSrc}" style="width: 100%; height: 100%; object-fit: cover;" alt="Capa">
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.4) 70%, transparent 100%); padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: center; z-index: 2;">
+                    <span style="font-size: 0.9rem; font-weight: 700; color: white; text-align: center; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${game.name}</span>
+                    <span class="platform-tag" style="margin-top: 2px;">${game.platform || 'N/A'}</span>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                showGameDetails(index);
+            });
+
+            return card;
+        }
+
         function render() {
             const listHome = document.getElementById('gameListHome');
             const listOthers = document.getElementById('gameListOthers');
@@ -563,6 +612,8 @@ if ('serviceWorker' in navigator) {
             const carouselDots = document.getElementById('carouselDots');
 
             if (playingGames.length > 0) {
+                const titleEl = document.getElementById('playingCarouselTitle');
+                if (titleEl) titleEl.style.display = 'block';
                 carouselSection.style.display = 'block';
                 carouselTrack.innerHTML = '';
                 carouselDots.innerHTML = '';
@@ -623,6 +674,8 @@ if ('serviceWorker' in navigator) {
                     };
                 }
             } else {
+                const titleEl = document.getElementById('playingCarouselTitle');
+                if (titleEl) titleEl.style.display = 'none';
                 const backlogGames = games.filter(game => game.status === 'Backlog');
                 if (backlogGames.length > 0) {
                     carouselSection.style.display = 'block';
@@ -686,7 +739,7 @@ if ('serviceWorker' in navigator) {
                 } else {
                     finalizadosGames.forEach(game => {
                         const originalIndex = games.indexOf(game);
-                        const card = createGameCard(game, originalIndex, true, true);
+                        const card = createGridGameCard(game, originalIndex);
                         finalizadosList.appendChild(card);
                     });
                 }
@@ -702,7 +755,7 @@ if ('serviceWorker' in navigator) {
                 } else {
                     dropadosGames.forEach(game => {
                         const originalIndex = games.indexOf(game);
-                        const card = createGameCard(game, originalIndex, true, true);
+                        const card = createGridGameCard(game, originalIndex);
                         dropadosList.appendChild(card);
                     });
                 }
@@ -827,7 +880,19 @@ if ('serviceWorker' in navigator) {
                 save();
                 render();
 
-
+                if (newStatus === 'Backlog') {
+                    const backlogGames = games.filter(g => g.status === 'Backlog');
+                    switchMainTab('backlog');
+                    if (backlogGames.length > 5) {
+                        switchView('others');
+                    } else {
+                        switchView('home');
+                    }
+                } else if (newStatus === 'Finalizado') {
+                    switchMainTab('finalizados');
+                } else if (newStatus === 'Dropado') {
+                    switchMainTab('dropados');
+                }
             }
         }
 
@@ -843,6 +908,20 @@ if ('serviceWorker' in navigator) {
                 games.splice(index, 1);
                 save();
                 render();
+            }
+        }
+
+        async function deleteGameFromModal(index) {
+            const confirmed = await customConfirm(
+                "Ao excluir o jogo, todas as informações sobre ele também serão excluídas. tem certeza que deseja remover este jogo?",
+                "Excluir Jogo",
+                "🗑️"
+            );
+            if (confirmed) {
+                games.splice(index, 1);
+                save();
+                render();
+                closeDetailsModal();
             }
         }
 
@@ -902,7 +981,7 @@ if ('serviceWorker' in navigator) {
                     const confirmed = await customConfirm(
                         "Tem certeza que deseja desistir deste jogo?",
                         "Desistir?",
-                        "❌",
+                        "<span class='icon-dropped'>⬇</span>",
                         "Sim",
                         "Não"
                     );
@@ -1294,7 +1373,7 @@ if ('serviceWorker' in navigator) {
             const actionButtons = game.status === 'Jogando' ? `
                 <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                     <button class="backup-btn" style="flex: 1; background: var(--status-finished); border-color: rgba(34, 197, 94, 0.4); color: white;" onclick="changeStatusFromModal(${index}, 'Finalizado')">🏆 Finalizar Jogo</button>
-                    <button class="backup-btn" style="flex: 1; background: var(--status-dropped); border-color: rgba(239, 68, 68, 0.4); color: white;" onclick="changeStatusFromModal(${index}, 'Dropado')">❌ Dropar Jogo</button>
+                    <button class="backup-btn" style="flex: 1; background: var(--status-dropped); border-color: rgba(239, 68, 68, 0.4); color: white;" onclick="changeStatusFromModal(${index}, 'Dropado')">⬇ Dropar Jogo</button>
                 </div>
             ` : '';
 
@@ -1356,17 +1435,25 @@ if ('serviceWorker' in navigator) {
             }
         }
 
-        function getRecordControlHtml(game, index) {
+        function getBacklogDurationHtml(game, index) {
+            if (index === -1 || game.status !== 'Backlog') return '';
+
+            const created = game.createdAt ? new Date(game.createdAt) : new Date();
+            const now = new Date();
+            const diffMs = Math.max(0, now - created);
+            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+
+            if (diffHrs < 24) return '';
+
+            return `
+                <div class="backlog-duration-box" style="background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #cbd5e1; font-weight: 600; text-align: center;">
+                    📅 ${getBacklogDurationMessage(game)}.
+                </div>
+            `;
+        }
+
+        function getRecordHtml(game, index) {
             if (index === -1) return '';
-            
-            let backlogDurationHtml = '';
-            if (game.status === 'Backlog') {
-                backlogDurationHtml = `
-                    <div class="backlog-duration-box" style="background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #cbd5e1; font-weight: 600; text-align: center;">
-                        📅 ${getBacklogDurationMessage(game)}.
-                    </div>
-                `;
-            }
             
             const isReadOnly = game.status !== 'Jogando';
             let recordHtml = '';
@@ -1386,7 +1473,7 @@ if ('serviceWorker' in navigator) {
                 `;
             }
             
-            return backlogDurationHtml + recordHtml;
+            return recordHtml;
         }
 
         function updateRecordFromModal(index, value) {
@@ -1506,12 +1593,13 @@ if ('serviceWorker' in navigator) {
                     <div style="border-left: 1px solid var(--border-color); height: auto;"></div>
                     <div style="text-align: center;">
                         <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Dropado</span>
-                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--status-dropped); margin-top: 2px;">❌ ${game.dropCount || 0}x</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--status-dropped); margin-top: 2px;">⬇ ${game.dropCount || 0}x</div>
                     </div>
                 </div>
             `;
 
-            const recordControl = getRecordControlHtml(game, index);
+            const backlogDurationHtml = getBacklogDurationHtml(game, index);
+            const recordHtml = getRecordHtml(game, index);
 
             let addGameButtonHtml = '';
             if (index === -1) {
@@ -1536,20 +1624,40 @@ if ('serviceWorker' in navigator) {
                 `;
             }
 
+            const platformBadgeHtml = game.platform ? `<span class="modal-badge badge-platform">${game.platform}</span>` : '';
+
+            // Botões de ação adicionais (Excluir e Devolver ao Backlog) para jogos já salvos (index !== -1)
+            let modalActionButtonsHtml = '';
+            if (index !== -1) {
+                const returnButtonHtml = (game.status === 'Finalizado' || game.status === 'Dropado') ? `
+                    <button class="backup-btn" style="flex: 1; border-color: rgba(255,255,255,0.15);" onclick="changeStatusFromModal(${index}, 'Backlog')">↩ Devolver ao Backlog</button>
+                ` : '';
+                
+                modalActionButtonsHtml = `
+                    <div style="display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        ${returnButtonHtml}
+                        <button class="backup-btn" style="flex: 1; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;" onclick="deleteGameFromModal(${index})">🗑️ Excluir Jogo</button>
+                    </div>
+                `;
+            }
+
             content.innerHTML = `
                 <div class="modal-hero">
                     <img src="${coverSrc}" class="modal-hero-cover" alt="Capa">
                     <div class="modal-hero-info">
                         <h2 class="modal-title">${game.name}</h2>
                         <div class="modal-meta-row">
+                            ${platformBadgeHtml}
                         </div>
                     </div>
                 </div>
                 <div class="modal-content-body">
                     ${addGameButtonHtml}
-                    ${statsHtml}
-                    ${recordControl}
+                    ${backlogDurationHtml}
                     ${playingControls}
+                    ${statsHtml}
+                    ${recordHtml}
+                    ${modalActionButtonsHtml}
                     <div class="modal-section-title">Sobre</div>
                     <p class="modal-summary">Informações detalhadas não encontradas no IGDB para este jogo. O status atual do jogo no seu backlog é: <strong>${game.status}</strong>.</p>
                 </div>
@@ -1640,12 +1748,13 @@ if ('serviceWorker' in navigator) {
                     <div style="border-left: 1px solid var(--border-color); height: auto;"></div>
                     <div style="text-align: center;">
                         <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Dropado</span>
-                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--status-dropped); margin-top: 2px;">❌ ${game.dropCount || 0}x</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--status-dropped); margin-top: 2px;">⬇ ${game.dropCount || 0}x</div>
                     </div>
                 </div>
             `;
 
-            const recordControl = getRecordControlHtml(game, index);
+            const backlogDurationHtml = getBacklogDurationHtml(game, index);
+            const recordHtml = getRecordHtml(game, index);
 
             let addGameButtonHtml = '';
             if (index === -1) {
@@ -1670,12 +1779,30 @@ if ('serviceWorker' in navigator) {
                 `;
             }
 
+            const platformBadgeHtml = game.platform ? `<span class="modal-badge badge-platform">${game.platform}</span>` : '';
+
+            // Botões de ação adicionais (Excluir e Devolver ao Backlog) para jogos já salvos (index !== -1)
+            let modalActionButtonsHtml = '';
+            if (index !== -1) {
+                const returnButtonHtml = (game.status === 'Finalizado' || game.status === 'Dropado') ? `
+                    <button class="backup-btn" style="flex: 1; border-color: rgba(255,255,255,0.15);" onclick="changeStatusFromModal(${index}, 'Backlog')">↩ Devolver ao Backlog</button>
+                ` : '';
+                
+                modalActionButtonsHtml = `
+                    <div style="display: flex; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        ${returnButtonHtml}
+                        <button class="backup-btn" style="flex: 1; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;" onclick="deleteGameFromModal(${index})">🗑️ Excluir Jogo</button>
+                    </div>
+                `;
+            }
+
             content.innerHTML = `
                 <div class="modal-hero">
                     <img src="${coverSrc}" class="modal-hero-cover" alt="Capa">
                     <div class="modal-hero-info">
                         <h2 class="modal-title">${details.name || game.name}</h2>
                         <div class="modal-meta-row">
+                            ${platformBadgeHtml}
                             ${releaseYear !== 'N/A' ? `<span class="modal-badge badge-year">${releaseYear}</span>` : ''}
                             ${details.rating ? `<span class="modal-badge badge-rating">★ ${ratingText}</span>` : ''}
                             ${devCompany ? `<span class="modal-badge badge-developer" title="${devCompany}">${devCompany}</span>` : ''}
@@ -1684,9 +1811,11 @@ if ('serviceWorker' in navigator) {
                 </div>
                 <div class="modal-content-body">
                     ${addGameButtonHtml}
-                    ${statsHtml}
-                    ${recordControl}
+                    ${backlogDurationHtml}
                     ${playingControls}
+                    ${statsHtml}
+                    ${recordHtml}
+                    ${modalActionButtonsHtml}
                     
                     <div>
                         <div class="modal-section-title">Sobre</div>

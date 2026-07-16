@@ -29,14 +29,14 @@
         <div class="nav-tabs">
             <button id="tabBacklog" class="tab-btn active" onclick="switchMainTab('backlog')">📋 Backlog</button>
             <button id="tabFinalizados" class="tab-btn" onclick="switchMainTab('finalizados')">🏆 Finalizados</button>
-            <button id="tabDropados" class="tab-btn" onclick="switchMainTab('dropados')">❌ Dropados</button>
+            <button id="tabDropados" class="tab-btn" onclick="switchMainTab('dropados')"><span class="icon-dropped">⬇</span> Dropados</button>
         </div>
 
         <!-- Home View -->
         <div id="homeView" class="view-section">
             <!-- Destaque: Jogando Atualmente -->
             <div id="playingCarouselSection" class="carousel-section" style="display: none;">
-                <h2 class="carousel-section-title title-playing">Jogando Atualmente</h2>
+                <h2 id="playingCarouselTitle" class="carousel-section-title title-playing">Jogando Atualmente</h2>
                 <div class="carousel-container">
                     <div id="playingCarousel" class="carousel-track">
                         <!-- Preenchido via JavaScript -->
@@ -79,7 +79,7 @@
                 <h2 class="carousel-section-title title-finished" style="margin-bottom: 0;">Jogos Finalizados</h2>
             </div>
             
-            <div id="gameListFinalizados" class="list-container"></div>
+            <div id="gameListFinalizados" class="grid-container"></div>
             <div id="finalizadosInputAnchor"></div>
         </div>
 
@@ -89,7 +89,7 @@
                 <h2 class="carousel-section-title title-dropped" style="margin-bottom: 0;">Jogos Dropados</h2>
             </div>
             
-            <div id="gameListDropados" class="list-container"></div>
+            <div id="gameListDropados" class="grid-container"></div>
             <div id="dropadosInputAnchor"></div>
         </div>
 
@@ -134,7 +134,7 @@
 
     <!-- Modal de Preferências -->
     <div id="preferencesModalOverlay" class="modal-overlay" onclick="closePreferencesModal(event)">
-        <div class="modal-container" style="max-width: 400px;" onclick="event.stopPropagation()">
+        <div class="modal-container" style="max-width: 400px; padding: 24px;" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closePreferencesModal(event)">✕</button>
             <h2 class="modal-title" style="margin-bottom: 20px; font-size: 1.3rem;">⚙️ Preferências</h2>
             
@@ -144,7 +144,7 @@
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Defina o limite de títulos simultâneos com o status "Jogando".</span>
             </div>
             
-            <button class="add-btn" style="width: 100%;" onclick="savePreferences()">Salvar Configurações</button>
+            <button class="add-btn" style="width: 100%; padding: 12px 20px;" onclick="savePreferences()">Salvar Configurações</button>
         </div>
     </div>
 
