@@ -1136,3 +1136,36 @@
             gap: 16px;
             margin-top: 10px;
         }
+
+        /* Temas do aplicativo */
+        body.theme-nintendont {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --border-color: #3b3b3b;
+            --primary: #e60012;
+            --primary-hover: #c4000e;
+        }
+
+        body.theme-play {
+            --bg-color: #060b18;
+            --card-bg: #0d162d;
+            --border-color: #1c2b53;
+            --primary: #00439c;
+            --primary-hover: #003780;
+        }
+
+        body.theme-xtheme {
+            --bg-color: #0a0f0d;
+            --card-bg: #131c17;
+            --border-color: #202f27;
+            --primary: #107c10;
+            --primary-hover: #0e6c0e;
+        }
+
+        body.theme-vapor {
+            --bg-color: #171a21;
+            --card-bg: #1b2838;
+            --border-color: #2a475e;
+            --primary: #66c0f4;
+            --primary-hover: #41acf0;
+        }
