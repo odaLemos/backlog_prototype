@@ -1,4 +1,4 @@
-const CACHE_NAME = 'backlog-v1';
+const CACHE_NAME = 'backlog-v4';
 const ASSETS = [
     './',
     './index.html',
@@ -37,7 +37,7 @@ self.addEventListener('activate', event => {
     self.clients.claim();
 });
 
-// Intercepção de requisições e resposta offline
+// Intercepção de requisições e resposta offline (Network First com Fallback para Cache)
 self.addEventListener('fetch', event => {
     // Não intercepta chamadas de API (IGDB, corsproxy ou tradução)
     if (
@@ -49,9 +49,20 @@ self.addEventListener('fetch', event => {
     }
 
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then(response => {
-                return response || fetch(event.request);
+                // Se der certo e for uma requisição GET válida, atualiza o cache
+                if (response && response.status === 200 && event.request.method === 'GET') {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Se falhar (ex: offline), busca do cache
+                return caches.match(event.request);
             })
     );
 });
