@@ -583,6 +583,24 @@
             display: inline-block;
         }
 
+        .tab-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            line-height: 1;
+        }
+
         .modal-content-body {
             padding: 20px;
             display: flex;
