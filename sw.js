@@ -1,11 +1,12 @@
-const CACHE_NAME = 'backlog-v9';
+const CACHE_NAME = 'backlog-v10';
 const ASSETS = [
     './',
     './index.html',
     './style.css',
     './app.js',
     './manifest.json',
-    './icon.svg'
+    './icon.svg',
+    'https://cdn.tailwindcss.com'
 ];
 
 // Instalação do Service Worker e caching de arquivos estáticos

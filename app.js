@@ -47,68 +47,106 @@ if ('serviceWorker' in navigator) {
             localStorage.setItem('backlog_oda_mobile', JSON.stringify(games));
         }
 
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `flex items-center justify-between gap-3 p-4 rounded-xl shadow-xl border text-sm font-semibold pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 max-sm:w-full`;
+            
+            let bgClass, borderClass, textClass, icon;
+            if (type === 'success') {
+                bgClass = 'bg-green-500/10';
+                borderClass = 'border-green-500/30';
+                textClass = 'text-green-400';
+                icon = '✅';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-500/10';
+                borderClass = 'border-red-500/30';
+                textClass = 'text-red-400';
+                icon = '❌';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-500/10';
+                borderClass = 'border-amber-500/30';
+                textClass = 'text-amber-400';
+                icon = '⚠️';
+            } else {
+                bgClass = 'bg-brand-primary/10';
+                borderClass = 'border-brand-primary/30';
+                textClass = 'text-brand-primary';
+                icon = 'ℹ️';
+            }
+            
+            toast.className += ` ${bgClass} ${borderClass} ${textClass}`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="text-base">${icon}</span>
+                    <span>${message}</span>
+                </div>
+                <button class="text-current hover:opacity-75 focus:outline-none ml-2 font-bold" onclick="this.parentElement.remove()">✕</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 50);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-2', 'opacity-0');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }
+            }, 4500);
+        }
+
         function customAlert(message, title = "Aviso", icon = "⚠️") {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('customDialogModal');
-                const titleEl = document.getElementById('customDialogTitle');
-                const msgEl = document.getElementById('customDialogMessage');
-                const iconEl = document.getElementById('customDialogIcon');
-                const buttonsEl = document.getElementById('customDialogButtons');
-
-                titleEl.textContent = title;
-                msgEl.textContent = message;
-                iconEl.innerHTML = icon;
-                buttonsEl.innerHTML = `
-                    <button class="add-btn" style="flex: 1; padding: 10px 20px;" id="customDialogOkBtn">OK</button>
-                `;
-
-                modal.classList.add('active');
-
-                const handleOk = () => {
-                    modal.classList.remove('active');
-                    resolve();
-                };
-
-                const btn = document.getElementById('customDialogOkBtn');
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                newBtn.addEventListener('click', handleOk);
-            });
+            let toastType = 'info';
+            if (icon === '✅' || title.toLowerCase().includes('sucesso') || title.toLowerCase().includes('concluída') || message.toLowerCase().includes('sucesso')) {
+                toastType = 'success';
+            } else if (icon === '❌' || title.toLowerCase().includes('erro') || message.toLowerCase().includes('erro')) {
+                toastType = 'error';
+            } else if (icon === '⚠️' || title.toLowerCase().includes('aviso') || title.toLowerCase().includes('limite')) {
+                toastType = 'warning';
+            }
+            showToast(message, toastType);
+            return Promise.resolve(true);
         }
 
         function customConfirm(message, title = "Confirmar", icon = "❓", confirmText = "Confirmar", cancelText = "Cancelar") {
             return new Promise((resolve) => {
-                const modal = document.getElementById('customDialogModal');
-                const titleEl = document.getElementById('customDialogTitle');
-                const msgEl = document.getElementById('customDialogMessage');
-                const iconEl = document.getElementById('customDialogIcon');
-                const buttonsEl = document.getElementById('customDialogButtons');
+                const overlay = document.getElementById('customConfirmModalOverlay');
+                const titleEl = document.getElementById('customConfirmTitle');
+                const msgEl = document.getElementById('customConfirmMessage');
+                const iconEl = document.getElementById('customConfirmIcon');
+                const buttonsEl = document.getElementById('customConfirmButtons');
+
+                if (!overlay) {
+                    resolve(confirm(message));
+                    return;
+                }
 
                 titleEl.textContent = title;
                 msgEl.textContent = message;
                 iconEl.innerHTML = icon;
                 buttonsEl.innerHTML = `
-                    <button class="backup-btn" style="flex: 1; padding: 10px 20px; border-color: rgba(255,255,255,0.15);" id="customDialogCancelBtn">${cancelText}</button>
-                    <button class="add-btn" style="flex: 1; padding: 10px 20px; background: var(--status-dropped); border-color: rgba(239, 68, 68, 0.4);" id="customDialogConfirmBtn">${confirmText}</button>
+                    <button class="flex-1 py-2.5 border border-brand-border text-brand-text hover:bg-brand-primary/10 rounded-xl transition-all font-semibold" id="customConfirmCancelBtn">${cancelText}</button>
+                    <button class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all font-semibold shadow-lg shadow-red-500/20" id="customConfirmOkBtn">${confirmText}</button>
                 `;
 
-                modal.classList.add('active');
+                overlay.classList.add('active');
 
-                const close = (result) => {
-                    modal.classList.remove('active');
-                    resolve(result);
+                const handleChoice = (choice) => {
+                    overlay.classList.remove('active');
+                    resolve(choice);
                 };
 
-                const confirmBtn = document.getElementById('customDialogConfirmBtn');
-                const newConfirmBtn = confirmBtn.cloneNode(true);
-                confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-
-                const cancelBtn = document.getElementById('customDialogCancelBtn');
-                const newCancelBtn = cancelBtn.cloneNode(true);
-                cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
-                newConfirmBtn.addEventListener('click', () => close(true));
-                newCancelBtn.addEventListener('click', () => close(false));
+                document.getElementById('customConfirmOkBtn').onclick = () => handleChoice(true);
+                document.getElementById('customConfirmCancelBtn').onclick = () => handleChoice(false);
             });
         }
 
@@ -368,6 +406,9 @@ if ('serviceWorker' in navigator) {
                 renderSuggestions(allSuggestionsResults, query);
             } catch (error) {
                 console.error('Erro ao buscar sugestões no IGDB:', error);
+                if (!isAppend) {
+                    renderSuggestions([], query);
+                }
             } finally {
                 isFetchingSuggestions = false;
             }
@@ -1051,27 +1092,39 @@ if ('serviceWorker' in navigator) {
             return true;
         }
 
-        // --- LÓGICA DO MENU SANDUÍCHE E PREFERÊNCIAS ---
+        // --- LÓGICA DO MENU SIDEBAR DRAWER E PREFERÊNCIAS ---
 
-        function toggleMenu(event) {
-            if (event) event.stopPropagation();
-            const dropdown = document.getElementById('menuDropdown');
-            if (dropdown.style.display === 'none') {
-                dropdown.style.display = 'block';
-            } else {
-                dropdown.style.display = 'none';
+        function openSidebarDrawer() {
+            const overlay = document.getElementById('sidebarDrawerOverlay');
+            const drawer = document.getElementById('sidebarDrawer');
+            if (overlay && drawer) {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100', 'pointer-events-auto');
+                drawer.classList.remove('-translate-x-full');
+                drawer.classList.add('translate-x-0');
+            }
+        }
+
+        function closeSidebarDrawer() {
+            const overlay = document.getElementById('sidebarDrawerOverlay');
+            const drawer = document.getElementById('sidebarDrawer');
+            if (overlay && drawer) {
+                overlay.classList.remove('opacity-100', 'pointer-events-auto');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                drawer.classList.remove('translate-x-0');
+                drawer.classList.add('-translate-x-full');
             }
         }
 
         function triggerImport(event) {
             if (event) event.preventDefault();
             document.getElementById('importFile').click();
-            document.getElementById('menuDropdown').style.display = 'none';
+            closeSidebarDrawer();
         }
 
         async function clearAllData(event) {
             if (event) event.preventDefault();
-            document.getElementById('menuDropdown').style.display = 'none';
+            closeSidebarDrawer();
 
             const confirmed = await customConfirm(
                 "Atenção: todas as informações sobre seus jogos serão excluídas permanentemente! Só será possível restaurar as informações caso você possua um arquivo de backup (.json).\n\nDeseja realmente apagar todos os dados?",
@@ -1097,7 +1150,7 @@ if ('serviceWorker' in navigator) {
 
         function openPreferencesModal(event) {
             if (event) event.preventDefault();
-            document.getElementById('menuDropdown').style.display = 'none';
+            closeSidebarDrawer();
             document.getElementById('prefMaxPlaying').value = maxPlayingLimit;
             document.getElementById('preferencesModalOverlay').classList.add('active');
         }
@@ -1118,15 +1171,6 @@ if ('serviceWorker' in navigator) {
                 customAlert('Por favor, insira um valor válido (maior ou igual a 1).', 'Erro', '❌');
             }
         }
-
-        // Fecha o menu suspenso se clicar fora
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('menuDropdown');
-            const menuBtn = document.getElementById('menuBtn');
-            if (dropdown && menuBtn && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
 
         function moveUp(index) {
             const game = games[index];
@@ -1266,7 +1310,20 @@ if ('serviceWorker' in navigator) {
         });
 
         document.getElementById('gameInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') addGame();
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                if (query.length >= 2) {
+                    const gameObj = {
+                        name: query,
+                        coverUrl: '',
+                        igdbId: null,
+                        platforms: [],
+                        status: activeMainTab === 'finalizados' ? 'Finalizado' : (activeMainTab === 'dropados' ? 'Dropado' : 'Backlog')
+                    };
+                    selectedGameData = gameObj;
+                    showGameDetails(gameObj);
+                }
+            }
         });
 
         // --- FUNÇÕES DE DETALHES DO JOGO (IGDB) ---
@@ -1565,10 +1622,14 @@ if ('serviceWorker' in navigator) {
                 try {
                     // Se não tiver o igdbId, tenta buscar pelo nome
                     if (!game.igdbId) {
-                        const foundId = await searchGameIdByName(game.name);
-                        if (foundId) {
-                            game.igdbId = foundId;
-                            if (index !== -1) save(); // Salva a associação somente se já estiver na lista
+                        try {
+                            const foundId = await searchGameIdByName(game.name);
+                            if (foundId) {
+                                game.igdbId = foundId;
+                                if (index !== -1) save(); // Salva a associação somente se já estiver na lista
+                            }
+                        } catch (e) {
+                            console.warn('Busca de ID por nome falhou, prosseguindo com detalhes simples:', e);
                         }
                     }
 
@@ -1578,17 +1639,27 @@ if ('serviceWorker' in navigator) {
                         return;
                     }
 
-                    const details = await fetchGameExtraDetails(game.igdbId);
-                    if (!details) {
+                    try {
+                        const details = await fetchGameExtraDetails(game.igdbId);
+                        if (!details) {
+                            renderSimpleDetails(game, index);
+                        } else {
+                            renderRichDetails(game, details, index);
+                        }
+                    } catch (e) {
+                        console.warn('Busca de detalhes ricos falhou, exibindo versão simples:', e);
                         renderSimpleDetails(game, index);
-                    } else {
-                        renderRichDetails(game, details, index);
                     }
                 } catch (err) {
                     console.error(err);
-                    loading.style.display = 'none';
-                    errorContainer.style.display = 'flex';
-                    retryBtn.onclick = loadData;
+                    // Como último recurso, tenta renderizar a versão simples
+                    try {
+                        renderSimpleDetails(game, index);
+                    } catch (finalErr) {
+                        loading.style.display = 'none';
+                        errorContainer.style.display = 'flex';
+                        retryBtn.onclick = loadData;
+                    }
                 }
             };
 
@@ -1982,11 +2053,87 @@ if ('serviceWorker' in navigator) {
         });
 
         // --- GERENCIAMENTO DE TEMAS ---
+        const THEMES = {
+            default: { // Twitch
+                '--brand-primary': '#9146FF',
+                '--brand-bg': '#0f172a',
+                '--brand-card': '#1e293b',
+                '--brand-border': '#334155',
+                '--brand-text': '#f8fafc',
+                '--brand-muted': '#94a3b8',
+                '--brand-accent': '#7c3aed',
+                '--primary': '#9146FF',
+                '--primary-hover': '#772CE8'
+            },
+            nintendont: { // Nintendo
+                '--brand-primary': '#E60012',
+                '--brand-bg': '#0a0a0a',
+                '--brand-card': '#1a1a1a',
+                '--brand-border': '#2d2d2d',
+                '--brand-text': '#ffffff',
+                '--brand-muted': '#a3a3a3',
+                '--brand-accent': '#ff3344',
+                '--primary': '#E60012',
+                '--primary-hover': '#b8000e'
+            },
+            play: { // PlayStation
+                '--brand-primary': '#00439c',
+                '--brand-bg': '#0a0e17',
+                '--brand-card': '#161c2a',
+                '--brand-border': '#2d3748',
+                '--brand-text': '#f7fafc',
+                '--brand-muted': '#a0aec0',
+                '--brand-accent': '#3182ce',
+                '--primary': '#00439c',
+                '--primary-hover': '#003780'
+            },
+            'x-theme': { // Xbox
+                '--brand-primary': '#107C10',
+                '--brand-bg': '#111111',
+                '--brand-card': '#1f1f1f',
+                '--brand-border': '#2e2e2e',
+                '--brand-text': '#f3f4f6',
+                '--brand-muted': '#9ca3af',
+                '--brand-accent': '#15b015',
+                '--primary': '#107C10',
+                '--primary-hover': '#0d620d'
+            },
+            vapor: { // Steam
+                '--brand-primary': '#66c0f4',
+                '--brand-bg': '#171a21',
+                '--brand-card': '#1b2838',
+                '--brand-border': '#2a475e',
+                '--brand-text': '#c7d5e0',
+                '--brand-muted': '#8f98a0',
+                '--brand-accent': '#101822',
+                '--primary': '#66c0f4',
+                '--primary-hover': '#4b9ecb'
+            }
+        };
+
         function changeTheme(themeName) {
-            document.body.classList.remove('theme-nintendont', 'theme-play', 'theme-xtheme', 'theme-vapor');
+            document.body.classList.remove('theme-nintendont', 'theme-play', 'theme-xtheme', 'theme-x-theme', 'theme-vapor');
             if (themeName !== 'default') {
                 document.body.classList.add(`theme-${themeName}`);
             }
+            
+            const themeColors = THEMES[themeName] || THEMES.default;
+            const root = document.documentElement;
+            for (const [key, value] of Object.entries(themeColors)) {
+                root.style.setProperty(key, value);
+            }
+            
+            // Também atualizamos as variáveis padrão do CSS antigo para manter compatibilidade
+            if (themeColors['--primary']) {
+                root.style.setProperty('--primary', themeColors['--primary']);
+                root.style.setProperty('--primary-hover', themeColors['--primary-hover']);
+                root.style.setProperty('--bg-color', themeColors['--brand-bg']);
+                root.style.setProperty('--card-bg', themeColors['--brand-card']);
+                root.style.setProperty('--border-color', themeColors['--brand-border']);
+                root.style.setProperty('--text-light', themeColors['--brand-text']);
+                root.style.setProperty('--text-muted', themeColors['--brand-muted']);
+            }
+            
             localStorage.setItem('app_theme', themeName);
         }
 
