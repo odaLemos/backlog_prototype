@@ -6,6 +6,26 @@
     <title>Meu Backlog de Jogos</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            primary: 'var(--brand-primary)',
+                            bg: 'var(--brand-bg)',
+                            card: 'var(--brand-card)',
+                            border: 'var(--brand-border)',
+                            text: 'var(--brand-text)',
+                            muted: 'var(--brand-muted)',
+                            accent: 'var(--brand-accent)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
 
@@ -15,23 +35,7 @@
         <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
             <h1>Meu <span>Backlog</span></h1>
             <div class="menu-container">
-                <button id="menuBtn" class="menu-btn" onclick="toggleMenu(event)">☰</button>
-                <div id="menuDropdown" class="menu-dropdown" style="display: none;">
-                    <div style="padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Tema do App</label>
-                        <select id="themeSelect" onchange="changeTheme(this.value)" style="width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; transition: border 0.2s;">
-                            <option value="default">Padrão</option>
-                            <option value="nintendont">Nintendont</option>
-                            <option value="play">Play</option>
-                            <option value="x-theme">X-Theme</option>
-                            <option value="vapor">Vapor</option>
-                        </select>
-                    </div>
-                    <a href="#" onclick="triggerImport(event)">⬆ Importar Backup</a>
-                    <a href="#" onclick="exportData(); toggleMenu(event);">⬇ Exportar Backup</a>
-                    <a href="#" onclick="openPreferencesModal(event)">⚙️ Preferências</a>
-                    <a href="#" onclick="clearAllData(event)" style="color: #f87171; border-top: 1px solid rgba(248, 113, 113, 0.25);">🗑️ Limpar Dados</a>
-                </div>
+                <button id="menuBtn" class="menu-btn" onclick="openSidebarDrawer()">☰</button>
             </div>
         </header>
 
@@ -125,16 +129,16 @@
     </div>
 
     <!-- Modal de Detalhes do Jogo -->
-    <div id="detailsModalOverlay" class="modal-overlay" onclick="closeDetailsModal(event)">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeDetailsModal(event)">✕</button>
+    <div id="detailsModalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center max-sm:items-end opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeDetailsModal(event)">
+        <div id="detailsModalContainer" class="w-[92%] sm:w-full sm:max-w-[550px] bg-brand-card border border-brand-border rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-y-auto max-h-[85vh] max-sm:max-h-[90vh] max-sm:w-full max-sm:rounded-b-none transform translate-y-full sm:scale-95 transition-all duration-300 ease-out relative flex flex-col" onclick="event.stopPropagation()">
+            <button class="absolute top-4 right-4 bg-black/60 border border-brand-border text-brand-text rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-lg z-10 hover:bg-black/85 transition-colors font-bold" onclick="closeDetailsModal(event)">✕</button>
             <div id="modalLoading" class="modal-loading-container" style="display: none;">
                 <div class="spinner"></div>
                 <p style="color: var(--text-muted); font-size: 0.9rem;">Carregando detalhes do jogo...</p>
             </div>
             <div id="modalError" class="modal-error-container" style="display: none;">
                 <p style="color: #ef4444; font-weight: 600;">Ocorreu um erro ao carregar as informações.</p>
-                <button class="backup-btn" style="margin-top: 10px;" id="retryBtn">Tentar Novamente</button>
+                <button class="backup-btn style-btn mt-2" id="retryBtn">Tentar Novamente</button>
             </div>
             <div id="modalContent" style="display: none;">
                 <!-- Preenchido via JavaScript -->
@@ -143,89 +147,92 @@
     </div>
 
     <!-- Modal de Preferências -->
-    <div id="preferencesModalOverlay" class="modal-overlay" onclick="closePreferencesModal(event)">
-        <div class="modal-container" style="max-width: 400px; padding: 24px;" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closePreferencesModal(event)">✕</button>
-            <h2 class="modal-title" style="margin-bottom: 20px; font-size: 1.3rem;">⚙️ Preferências</h2>
+    <div id="preferencesModalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center max-sm:items-end opacity-0 pointer-events-none transition-opacity duration-300" onclick="closePreferencesModal(event)">
+        <div id="preferencesModalContainer" class="w-[92%] sm:w-full sm:max-w-[400px] bg-brand-card border border-brand-border rounded-t-2xl sm:rounded-2xl shadow-2xl p-6 transform translate-y-full sm:scale-95 transition-all duration-300 ease-out relative flex flex-col" onclick="event.stopPropagation()">
+            <button class="absolute top-4 right-4 text-brand-text hover:text-brand-primary text-xl font-bold" onclick="closePreferencesModal(event)">✕</button>
+            <h2 class="text-xl font-extrabold text-brand-text mb-6">⚙️ Preferências</h2>
             
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                <label style="font-size: 0.9rem; font-weight: 700; color: #cbd5e1;">Limite de jogos em andamento (Jogando):</label>
-                <input type="number" id="prefMaxPlaying" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: white; font-size: 1rem; font-weight: bold; width: 100%;">
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Defina o limite de títulos simultâneos com o status "Jogando".</span>
+            <div class="flex flex-col gap-2 mb-6">
+                <label class="text-sm font-bold text-brand-text">Limite de jogos em andamento (Jogando):</label>
+                <input type="number" id="prefMaxPlaying" min="1" max="10" class="p-3 rounded-lg border border-brand-border bg-brand-bg text-brand-text font-bold w-full outline-none focus:border-brand-primary transition-colors">
+                <span class="text-xs text-brand-muted">Defina o limite de títulos simultâneos com o status "Jogando".</span>
             </div>
             
-            <button class="add-btn" style="width: 100%; padding: 12px 20px;" onclick="savePreferences()">Salvar Configurações</button>
+            <button class="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white font-bold rounded-lg transition-colors shadow-lg shadow-brand-primary/20" onclick="savePreferences()">Salvar Configurações</button>
         </div>
     </div>
 
-    <!-- Modal de Diálogo Customizado (Alert / Confirm) -->
-    <div id="customDialogModal" class="modal-overlay" style="z-index: 1200;">
-        <div class="modal-container" style="max-width: 400px; text-align: center; padding: 24px;" onclick="event.stopPropagation()">
-            <div id="customDialogIcon" style="font-size: 2.5rem; margin-bottom: 12px;">⚠️</div>
-            <h3 id="customDialogTitle" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: white;">Aviso</h3>
-            <p id="customDialogMessage" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px;">Mensagem...</p>
-            <div id="customDialogButtons" style="display: flex; gap: 12px; justify-content: center;">
+    <!-- Container de Toasts/Alertas -->
+    <div id="toastContainer" class="fixed top-4 right-4 max-sm:left-4 max-sm:right-4 z-[300] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Modal de Diálogo de Confirmação e Alerta Crítico (Tailwind-based) -->
+    <div id="customConfirmModalOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[220] flex items-center justify-center max-sm:items-end opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="customConfirmModalContainer" class="w-[92%] sm:w-full sm:max-w-[400px] bg-brand-card border border-brand-border rounded-t-2xl sm:rounded-2xl shadow-2xl p-6 transform translate-y-full sm:scale-95 transition-all duration-300 ease-out relative flex flex-col items-center text-center" onclick="event.stopPropagation()">
+            <div id="customConfirmIcon" class="text-4xl mb-4">⚠️</div>
+            <h3 id="customConfirmTitle" class="text-lg font-extrabold text-brand-text mb-2">Confirmar</h3>
+            <p id="customConfirmMessage" class="text-sm text-brand-muted leading-relaxed mb-6">Mensagem de confirmação...</p>
+            <div id="customConfirmButtons" class="flex gap-3 w-full">
                 <!-- Botões inseridos dinamicamente -->
             </div>
         </div>
     </div>
 
     <!-- Modal de Boas-Vindas (Primeiro Acesso) -->
-    <div id="onboardingModal" class="modal-overlay" style="z-index: 1300;">
-        <div class="modal-container" style="max-width: 500px; padding: 30px; text-align: center; justify-content: space-between; min-height: 480px;" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeOnboarding()">✕</button>
+    <div id="onboardingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[250] flex items-center justify-center max-sm:items-end opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="onboardingModalContainer" class="w-[92%] sm:w-full sm:max-w-[500px] bg-brand-card border border-brand-border rounded-t-2xl sm:rounded-2xl shadow-2xl p-8 transform translate-y-full sm:scale-95 transition-all duration-300 ease-out relative flex flex-col justify-between min-h-[480px]" onclick="event.stopPropagation()">
+            <button class="absolute top-4 right-4 text-brand-text hover:text-brand-primary text-xl font-bold" onclick="closeOnboarding()">✕</button>
             
-            <div id="onboardingSlidesContainer" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+            <div id="onboardingSlidesContainer" class="flex-grow flex flex-col justify-center items-center w-full">
                 <!-- Slide 1 -->
-                <div class="onboarding-slide active" id="onboardingSlide1" style="display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+                <div class="onboarding-slide active flex flex-col items-center gap-4 w-full" id="onboardingSlide1">
                     <div style="font-size: 3.5rem; filter: drop-shadow(0 4px 12px rgba(139,92,246,0.3));">Bem-vindo! 🎮</div>
-                    <h2 class="modal-title" style="font-size: 1.5rem; margin: 0; color: white;">Meu Backlog</h2>
-                    <p style="color: var(--text-light); font-size: 0.95rem; line-height: 1.6; max-width: 360px; margin: 0;">
+                    <h2 class="text-2xl font-extrabold text-brand-text mt-4">Meu <span class="text-brand-primary">Backlog</span></h2>
+                    <p class="text-brand-text text-sm text-center leading-relaxed max-w-[360px] mt-2">
                         O lugar perfeito para gerenciar, planejar e celebrar a sua jornada gamer. Nunca mais se perca em meio a tantos títulos e plataformas!
                     </p>
                 </div>
                 
                 <!-- Slide 2 -->
-                <div class="onboarding-slide" id="onboardingSlide2" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
-                    <div style="font-size: 3.5rem; filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3)); font-weight: bold; color: var(--primary);">🏆</div>
-                    <h2 class="modal-title" style="font-size: 1.5rem; margin: 0; color: white;">Principais Recursos</h2>
-                    <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; width: 100%; max-width: 380px; margin-top: 10px;">
-                        <div style="display: flex; gap: 12px; align-items: flex-start;">
-                            <span style="font-size: 1.3rem; line-height: 1;">📋</span>
+                <div class="onboarding-slide flex-col items-center gap-4 w-full" id="onboardingSlide2" style="display: none;">
+                    <div style="font-size: 3.5rem; filter: drop-shadow(0 4px 12px rgba(139,92,246,0.35));" class="font-bold text-brand-primary">🏆</div>
+                    <h2 class="text-2xl font-extrabold text-brand-text mt-2">Principais Recursos</h2>
+                    <div class="flex flex-col gap-4 text-left w-full max-w-[380px] mt-4">
+                        <div class="flex gap-3 items-start">
+                            <span class="text-xl">📋</span>
                             <div>
-                                <strong style="color: var(--primary); font-size: 0.9rem;">Organize seu Backlog</strong>
-                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Planeje os próximos jogos da fila, ordene e filtre conforme preferir.</p>
+                                <strong class="text-brand-primary text-sm">Organize seu Backlog</strong>
+                                <p class="text-brand-muted text-xs mt-1 leading-relaxed">Planeje os próximos jogos da fila, ordene e filtre conforme preferir.</p>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 12px; align-items: flex-start;">
-                            <span style="font-size: 1.3rem; line-height: 1;">⏳</span>
+                        <div class="flex gap-3 items-start">
+                            <span class="text-xl">⏳</span>
                             <div>
-                                <strong style="color: var(--status-playing); font-size: 0.9rem;">Controle de Sessão</strong>
-                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Registre a data de início, tempo de jogo em horas e gerencie os títulos ativos.</p>
+                                <strong class="text-amber-500 text-sm">Controle de Sessão</strong>
+                                <p class="text-brand-muted text-xs mt-1 leading-relaxed">Registre a data de início, tempo de jogo em horas e gerencie os títulos ativos.</p>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 12px; align-items: flex-start;">
-                            <span style="font-size: 1.3rem; line-height: 1;">⬇️</span>
+                        <div class="flex gap-3 items-start">
+                            <span class="text-xl">⬇️</span>
                             <div>
-                                <strong style="color: var(--status-dropped); font-size: 0.9rem;">Status Detalhados</strong>
-                                <p style="color: var(--text-muted); font-size: 0.8rem; margin: 2px 0 0 0; line-height: 1.4;">Acompanhe jogos finalizados e dropados com estatísticas exclusivas.</p>
+                                <strong class="text-red-500 text-sm">Status Detalhados</strong>
+                                <p class="text-brand-muted text-xs mt-1 leading-relaxed">Acompanhe jogos finalizados e dropados com estatísticas exclusivas.</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Slide 3 -->
-                <div class="onboarding-slide" id="onboardingSlide3" style="display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
-                    <div style="font-size: 1.1rem; font-weight: 700; color: #4ade80; max-width: 360px; line-height: 1.4; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                <div class="onboarding-slide flex-col items-center gap-4 w-full" id="onboardingSlide3" style="display: none;">
+                    <div class="text-base font-bold text-green-400 max-w-[360px] text-center leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
                         Aproveite o aplicativo e divirta-se! 🎉
                     </div>
                     
                     <!-- Caixa de inclusão de jogo existente -->
-                    <div class="empty-backlog-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(56, 189, 248, 0.25); border-radius: 16px; text-align: center; gap: 12px; width: 100%; max-width: 380px; box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.02);">
-                        <div style="font-size: 2.5rem; animation: float-icon 3s ease-in-out infinite alternate; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));">👾</div>
-                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-light); margin: 0; letter-spacing: 0.5px;">Adicione jogos ao seu backlog</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); max-width: 260px; margin: 0; line-height: 1.4;">Comece a sua jornada gamer organizando seus jogos favoritos em um só lugar!</p>
-                        <button class="add-btn" onclick="startAppAndAddGame()" style="margin-top: 4px; padding: 10px 18px; border-radius: 8px; font-weight: bold; background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); transition: transform 0.2s; font-size: 0.85rem;">
+                    <div class="w-full max-w-[380px] mt-4 p-6 bg-brand-bg/25 border border-dashed border-sky-400/25 rounded-2xl flex flex-col items-center text-center gap-3 shadow-[inset_0_0_20px_rgba(56,189,248,0.02)]">
+                        <div class="text-4xl animate-[float-icon_3s_ease-in-out_infinite_alternate] drop-shadow-[0_0_8px_rgba(56,189,248,0.45)]">👾</div>
+                        <h3 class="text-sm font-bold text-brand-text tracking-wide">Adicione jogos ao seu backlog</h3>
+                        <p class="text-xs text-brand-muted max-w-[260px] leading-relaxed">Comece a sua jornada gamer organizando seus jogos favoritos em um só lugar!</p>
+                        <button class="mt-2 px-5 py-2.5 rounded-xl font-bold bg-gradient-to-r from-sky-400 to-sky-600 border-none text-white cursor-pointer flex items-center gap-2 shadow-lg shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98] transition-transform text-xs" onclick="startAppAndAddGame()">
                             <span>+</span> Adicionar Primeiro Jogo
                         </button>
                     </div>
@@ -233,19 +240,59 @@
             </div>
             
             <!-- Indicadores e Botões de Ação do Onboarding -->
-            <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+            <div class="flex flex-col gap-4 w-full mt-6 border-t border-brand-border/40 pt-4">
                 <!-- Dots -->
-                <div style="display: flex; justify-content: center; gap: 8px;" id="onboardingDots">
+                <div class="flex justify-center gap-2" id="onboardingDots">
                     <span class="carousel-dot active" onclick="goToOnboardingSlide(0)"></span>
                     <span class="carousel-dot" onclick="goToOnboardingSlide(1)"></span>
                     <span class="carousel-dot" onclick="goToOnboardingSlide(2)"></span>
                 </div>
                 
-                <div style="display: flex; gap: 12px; width: 100%;">
-                    <button class="backup-btn" style="flex: 1; padding: 10px 20px; border-color: rgba(255,255,255,0.15);" id="onboardingBackBtn" onclick="prevOnboardingSlide()" disabled>Voltar</button>
-                    <button class="add-btn" style="flex: 1; padding: 10px 20px;" id="onboardingNextBtn" onclick="nextOnboardingSlide()">Avançar</button>
+                <div class="flex gap-3 w-full">
+                    <button class="flex-1 py-2.5 border border-brand-border text-brand-text hover:bg-brand-primary/10 rounded-xl transition-all" id="onboardingBackBtn" onclick="prevOnboardingSlide()" disabled>Voltar</button>
+                    <button class="flex-1 py-2.5 bg-brand-primary hover:bg-brand-primary/95 text-white font-bold rounded-xl transition-all shadow-lg shadow-brand-primary/20" id="onboardingNextBtn" onclick="nextOnboardingSlide()">Avançar</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Drawer Menu -->
+    <div id="sidebarDrawerOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeSidebarDrawer()"></div>
+    <div id="sidebarDrawer" class="fixed top-0 left-0 bottom-0 w-[280px] bg-brand-card border-r border-brand-border z-[101] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between p-6 shadow-2xl">
+        <div>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-extrabold text-brand-text">Meu <span class="text-brand-primary">Backlog</span></h2>
+                <button class="text-brand-text hover:text-brand-primary text-2xl font-bold" onclick="closeSidebarDrawer()">✕</button>
+            </div>
+            
+            <nav class="flex flex-col gap-4">
+                <div class="flex flex-col gap-2 p-3 bg-brand-bg/50 border border-brand-border/40 rounded-xl">
+                    <label class="text-xs font-bold text-brand-muted uppercase tracking-wider">Tema do App</label>
+                    <select id="themeSelect" onchange="changeTheme(this.value)" class="w-full p-2 rounded-lg border border-brand-border bg-brand-bg text-brand-text font-bold text-sm cursor-pointer outline-none focus:border-brand-primary transition-colors duration-200">
+                        <option value="default">Padrão</option>
+                        <option value="nintendont">Nintendont</option>
+                        <option value="play">Play</option>
+                        <option value="x-theme">X-Theme</option>
+                        <option value="vapor">Vapor</option>
+                    </select>
+                </div>
+                
+                <a href="#" onclick="triggerImport(event)" class="flex items-center gap-3 p-3 text-brand-text hover:bg-brand-primary/10 hover:text-brand-primary rounded-xl font-semibold transition-all duration-200">
+                    <span class="text-lg">⬆</span> Importar Backup
+                </a>
+                <a href="#" onclick="exportData(); closeSidebarDrawer();" class="flex items-center gap-3 p-3 text-brand-text hover:bg-brand-primary/10 hover:text-brand-primary rounded-xl font-semibold transition-all duration-200">
+                    <span class="text-lg">⬇</span> Exportar Backup
+                </a>
+                <a href="#" onclick="openPreferencesModal(event)" class="flex items-center gap-3 p-3 text-brand-text hover:bg-brand-primary/10 hover:text-brand-primary rounded-xl font-semibold transition-all duration-200">
+                    <span class="text-lg">⚙️</span> Preferências
+                </a>
+            </nav>
+        </div>
+        
+        <div>
+            <a href="#" onclick="clearAllData(event)" class="flex items-center gap-3 p-3 text-red-400 hover:bg-red-500/10 rounded-xl font-semibold transition-all duration-200 border-t border-brand-border/40 mt-4 pt-4">
+                <span class="text-lg">🗑️</span> Limpar Dados
+            </a>
         </div>
     </div>
 

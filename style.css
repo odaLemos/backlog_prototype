@@ -2,14 +2,22 @@
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --border-color: #334155;
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
+            --primary: #9146FF;
+            --primary-hover: #772CE8;
             --text-light: #f8fafc;
             --text-muted: #94a3b8;
             --status-backlog: #64748b;
             --status-playing: #eab308;
             --status-finished: #22c55e;
             --status-dropped: #ef4444;
+
+            --brand-primary: #9146FF;
+            --brand-bg: #0f172a;
+            --brand-card: #1e293b;
+            --brand-border: #334155;
+            --brand-text: #f8fafc;
+            --brand-muted: #94a3b8;
+            --brand-accent: #7c3aed;
         }
 
         * {
@@ -1168,4 +1176,16 @@
             --border-color: #2a475e;
             --primary: #66c0f4;
             --primary-hover: #41acf0;
+        }
+
+        /* Tailwind active transition rules */
+        .active {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        .active #detailsModalContainer,
+        .active #preferencesModalContainer,
+        .active #onboardingModalContainer,
+        .active #customConfirmModalContainer {
+            transform: translateY(0) scale(1) !important;
         }
